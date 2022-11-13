@@ -949,9 +949,29 @@ void CSuperCobraObject::Ai()
 {
 }
 
+//float Random(float fMin, float fMax)
+//{
+//	float fRandomValue = (float)rand();
+//	if (fRandomValue < fMin) fRandomValue = fMin;
+//	if (fRandomValue > fMax) fRandomValue = fMax;
+//	return(fRandomValue);
+//}
+//
+//float Random()
+//{
+//	return(rand() / float(RAND_MAX));
+//}
+
 void CSuperCobraObject::RandMove()
 {
-
+	MoveForward(80.f);
+	Rotate(0.f, 90.f, 0.f);
+	XMFLOAT3 pos = GetPosition();
+	if (pos.x > 4400.f || pos.x < 200.f || pos.z > 4400.f || pos.z < 200.f)
+	{
+		Rotate(0.f, 180.f, 0.f);
+		MoveForward(80.f);
+	}
 }
 
 void CSuperCobraObject::CheckPlayer()
