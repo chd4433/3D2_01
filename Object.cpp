@@ -941,45 +941,119 @@ void CSuperCobraObject::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
-
+	Ai();
 	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+}
+
+int RandRotate()
+{
+	std::random_device rd;
+	std::default_random_engine dre(rd());
+	std::uniform_int_distribution<int> uid(1, 90);
+	int iRand = uid(dre);
+	return iRand;
 }
 
 void CSuperCobraObject::Ai()
 {
-}
-
-//float Random(float fMin, float fMax)
-//{
-//	float fRandomValue = (float)rand();
-//	if (fRandomValue < fMin) fRandomValue = fMin;
-//	if (fRandomValue > fMax) fRandomValue = fMax;
-//	return(fRandomValue);
-//}
-//
-//float Random()
-//{
-//	return(rand() / float(RAND_MAX));
-//}
-
-void CSuperCobraObject::RandMove()
-{
-	MoveForward(80.f);
-	Rotate(0.f, 90.f, 0.f);
-	XMFLOAT3 pos = GetPosition();
-	if (pos.x > 4400.f || pos.x < 200.f || pos.z > 4400.f || pos.z < 200.f)
+	if (CheckPlayer())
 	{
-		Rotate(0.f, 180.f, 0.f);
-		MoveForward(80.f);
+
+	}
+	else
+	{
+		switch (m_behavior)
+		{
+		case ENEMY_PLAY::ENEMY_MOVECHECK:
+		{
+			m_iRoteDest = RandRotate();
+			Rotate(0.f, m_iRoteDest, 0.f);
+			MoveForward(100.f);
+			XMFLOAT3 pos = GetPosition();
+			if (pos.x > 4400.f || pos.x < 200.f || pos.z > 4400.f || pos.z < 200.f);
+			else
+				m_behavior = ENEMY_PLAY::ENEMY_ROTATE;
+			Rotate(0.f, 180.f, 0.f);
+			MoveForward(100.f);
+			Rotate(0.f, 180.f, 0.f);
+			Rotate(0.f, -m_iRoteDest, 0.f);
+		}
+		break;
+		case ENEMY_PLAY::ENEMY_ROTATE:
+			Rotate(0.f, 1.f, 0.f);
+			++m_iRotateCnt;
+			if (m_iRotateCnt >= m_iRoteDest)
+				m_behavior = ENEMY_PLAY::ENEMY_MOVE;
+			break;
+		case ENEMY_PLAY::ENEMY_MOVE:
+			MoveForward(1.f);
+			++m_iMoveCnt;
+			if (m_iMoveCnt >= 100)
+				m_behavior = ENEMY_PLAY::ENEMY_MOVECHECK;
+			break;
+		default:
+			break;
+		}
 	}
 }
 
-void CSuperCobraObject::CheckPlayer()
+void CSuperCobraObject::RandMove()
 {
+}
+
+bool CSuperCobraObject::CheckPlayer()
+{
+	XMFLOAT3 pos = GetPosition();
+	float dist = sqrt(pow(m_PlayerPosition.x - pos.x, 2) + pow(m_PlayerPosition.y - pos.y, 2) + pow(m_PlayerPosition.z - pos.z, 2));
+	if (dist < 100.f)
+	{
+		XMFLOAT3 xmf3Dir = Vector3::Normalize(Vector3::Subtract(m_PlayerPosition, GetPosition()));
+		//RotateXZPlayer(GetLook(), xmf3Dir);
+		RotateYPlayer(GetLook(), xmf3Dir);
+		return true;
+	}
+	return false;
 }
 
 void CSuperCobraObject::shoot()
 {
+}
+
+void CSuperCobraObject::RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir)
+{
+	XMFLOAT3 xmf3VecLook = look;
+	XMFLOAT3 xmf3VecDir = dir;
+	xmf3VecLook.y = 0.0f;
+	xmf3VecDir.y = 0.0f;
+	float angle = Vector3::Angle(xmf3VecLook, xmf3VecDir);
+	if (Vector3::DotProduct(GetUp(), Vector3::CrossProduct(xmf3VecLook, xmf3VecDir)) < 0)
+		angle *= -1.0f;
+	if (angle > 5.f)
+	{
+		Rotate(0.f, 1.f, 0.f);
+	}
+	else if(angle < -5.f)
+	{
+		Rotate(0.f, -1.f, 0.f);
+	}
+	else
+	{
+		Rotate(0.f, angle, 0.f);
+	}
+
+}
+
+void CSuperCobraObject::RotateYPlayer(XMFLOAT3& look, XMFLOAT3& dir)
+{
+	XMFLOAT3 xmf3VecLook = look;
+	XMFLOAT3 xmf3VecDir = dir;
+	xmf3VecLook.x = 0.0f, xmf3VecLook.z = 0.0f;
+	xmf3VecDir.x = 0.0f, xmf3VecDir.z = 0.0f;
+	float angle = Vector3::Angle(xmf3VecLook, xmf3VecDir);
+	if (Vector3::DotProduct(GetUp(), Vector3::CrossProduct(xmf3VecLook, xmf3VecDir)) < 0)
+		angle *= -1.0f;
+	cout << angle << endl;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

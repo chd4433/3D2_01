@@ -24,7 +24,7 @@
 #include <vector>
 
 #include <time.h>
-
+#include <random>
 #include <iostream>
 using namespace std;
 
@@ -99,14 +99,14 @@ extern ID3D12Resource* CreateTexture2DResource(ID3D12Device* pd3dDevice, ID3D12G
 
 #define EPSILON					1.0e-10f
 
-#define OBJNUM 10
+#define OBJNUM 1
 
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
 inline float InverseSqrt(float fValue) { return 1.0f / sqrtf(fValue); }
 inline void Swap(float *pfS, float *pfT) { float fTemp = *pfS; *pfS = *pfT; *pfT = fTemp; }
 
-
+enum class ENEMY_PLAY { ENEMY_MOVECHECK,ENEMY_ROTATE, ENEMY_MOVE};
 
 namespace Vector3
 {

@@ -404,12 +404,12 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 	case WM_KEYDOWN:
 		switch (wParam)
 		{
-		case 'W': m_ppGameObjects[0]->MoveForward(+1.0f); break;
-		case 'S': m_ppGameObjects[0]->MoveForward(-1.0f); break;
-		case 'A': m_ppGameObjects[0]->MoveStrafe(-1.0f); break;
-		case 'D': m_ppGameObjects[0]->MoveStrafe(+1.0f); break;
-		case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
-		case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
+		//case 'W': m_ppGameObjects[0]->MoveForward(+1.0f); break;
+		//case 'S': m_ppGameObjects[0]->MoveForward(-1.0f); break;
+		//case 'A': m_ppGameObjects[0]->MoveStrafe(-1.0f); break;
+		//case 'D': m_ppGameObjects[0]->MoveStrafe(+1.0f); break;
+		//case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
+		//case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
 		default:
 			break;
 		}
@@ -441,6 +441,11 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	m_pTerrainWater->Animate(fTimeElapsed);
 	//Ãß°¡
 	//m_xmf4x4WaterAnimation._32 += fTimeElapsed * 0.00125f;
+	if (m_ppShaders[0])
+	{
+		dynamic_cast<CObjectsShader*>(m_ppShaders[0])->SetpPos(m_pPlayer->GetPosition());
+		dynamic_cast<CObjectsShader*>(m_ppShaders[0])->UpdatePlayerPos();
+	}
 }
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)

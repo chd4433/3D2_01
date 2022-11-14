@@ -132,10 +132,18 @@ public:
 
 	const float GetObjectNum() { return m_nObjects; };
 	CGameObject** GetppObject() { return m_ppObjects; };
+	const XMFLOAT3 GetpPos() const { return m_PlayerPosition; };
+
+	void SetpPos(XMFLOAT3 pos) { m_PlayerPosition = pos; }
+
+	void UpdatePlayerPos();
+
+
 
 protected:
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;
+	XMFLOAT3 m_PlayerPosition;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

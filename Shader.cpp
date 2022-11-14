@@ -440,7 +440,7 @@ XMFLOAT3 RandomPositionInSphere(XMFLOAT3 xmf3Center, float fRadius, int nColumn,
 
 void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext)
 {
-	m_nObjects = 10;
+	m_nObjects = 1;
 	m_ppObjects = new CGameObject*[m_nObjects];
 
 	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 17); //SuperCobra(17), Gunship(2)
@@ -546,6 +546,14 @@ void CObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera 
 			m_ppObjects[j]->UpdateTransform(NULL);
 			m_ppObjects[j]->Render(pd3dCommandList, pCamera);
 		}
+	}
+}
+
+void CObjectsShader::UpdatePlayerPos()
+{
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		dynamic_cast<CSuperCobraObject*>(m_ppObjects[i])->SetPlayerPos(m_PlayerPosition);
 	}
 }
 

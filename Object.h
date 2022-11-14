@@ -216,6 +216,7 @@ public:
 	virtual void ReleaseUploadBuffers();
 	virtual void UpdateBoundingBox() {};
 
+	const XMFLOAT4X4 GetWorld() const { return m_xmf4x4World; }
 	XMFLOAT3 GetPosition();
 	XMFLOAT3 GetLook();
 	XMFLOAT3 GetUp();
@@ -262,14 +263,24 @@ public:
 private:
 	CGameObject					*m_pMainRotorFrame = NULL;
 	CGameObject					*m_pTailRotorFrame = NULL;
+	ENEMY_PLAY					m_behavior;
+	int							m_iRotateCnt = 0;
+	int							m_iMoveCnt = 0;
+	int							m_iRoteDest = 0;
+	XMFLOAT3					m_PlayerPosition;
 
 public:
 	virtual void PrepareAnimate();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);
+
+	void SetPlayerPos(XMFLOAT3 pos) { m_PlayerPosition = pos; }
+
 	void Ai();
 	void RandMove();
-	void CheckPlayer();
+	bool CheckPlayer();
 	void shoot();
+	void RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir);
+	void RotateYPlayer(XMFLOAT3& look, XMFLOAT3& dir);
 };
 
 class CGunshipObject : public CGameObject
