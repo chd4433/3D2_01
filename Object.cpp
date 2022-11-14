@@ -949,7 +949,7 @@ int RandRotate()
 {
 	std::random_device rd;
 	std::default_random_engine dre(rd());
-	std::uniform_int_distribution<int> uid(1, 90);
+	std::uniform_int_distribution<int> uid(-180, 180);
 	int iRand = uid(dre);
 	return iRand;
 }
@@ -980,16 +980,36 @@ void CSuperCobraObject::Ai()
 		}
 		break;
 		case ENEMY_PLAY::ENEMY_ROTATE:
-			Rotate(0.f, 1.f, 0.f);
-			++m_iRotateCnt;
-			if (m_iRotateCnt >= m_iRoteDest)
-				m_behavior = ENEMY_PLAY::ENEMY_MOVE;
+			if (m_iRoteDest < 0)
+			{
+				Rotate(0.f, -1.f, 0.f);
+				--m_iRotateCnt;
+				if (m_iRotateCnt <= m_iRoteDest)
+				{
+					m_behavior = ENEMY_PLAY::ENEMY_MOVE;
+					m_iRotateCnt = 0;
+				}	
+			}
+			else
+			{
+				Rotate(0.f, 1.f, 0.f);
+				++m_iRotateCnt;
+				if (m_iRotateCnt >= m_iRoteDest)
+				{
+					m_behavior = ENEMY_PLAY::ENEMY_MOVE;
+					m_iRotateCnt = 0;
+				}
+			}
 			break;
 		case ENEMY_PLAY::ENEMY_MOVE:
-			MoveForward(1.f);
+			MoveForward(0.5f);
 			++m_iMoveCnt;
 			if (m_iMoveCnt >= 100)
+			{
 				m_behavior = ENEMY_PLAY::ENEMY_MOVECHECK;
+				m_iMoveCnt = 0;
+			}
+				
 			break;
 		default:
 			break;
@@ -1047,12 +1067,15 @@ void CSuperCobraObject::RotateYPlayer(XMFLOAT3& look, XMFLOAT3& dir)
 {
 	XMFLOAT3 xmf3VecLook = look;
 	XMFLOAT3 xmf3VecDir = dir;
-	xmf3VecLook.x = 0.0f, xmf3VecLook.z = 0.0f;
-	xmf3VecDir.x = 0.0f, xmf3VecDir.z = 0.0f;
+	xmf3VecLook.x = 0.0f;
+	xmf3VecDir.x = 0.0f;  
 	float angle = Vector3::Angle(xmf3VecLook, xmf3VecDir);
-	if (Vector3::DotProduct(GetUp(), Vector3::CrossProduct(xmf3VecLook, xmf3VecDir)) < 0)
+
+	if (Vector3::DotProduct(GetLook(), Vector3::CrossProduct(xmf3VecLook, xmf3VecDir)) < 0)
 		angle *= -1.0f;
-	cout << angle << endl;
+	cout <<angle << endl;
+
+
 
 }
 
