@@ -499,6 +499,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			for (int i = 0; i < m_nMeshes; i++)
 			{
 				if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, 0);
+				//if (m_pcbMappedGameObject) XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_pMaterial->m_pTexture->m_xmf4x4Texture)));
 			}
 		}
 	}
@@ -1346,7 +1347,7 @@ CFog::CFog(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
 
 	CTexture* pFogTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 
-	pFogTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Explode_8x8.dds", RESOURCE_TEXTURE2D, 0);
+	pFogTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/fog.dds", RESOURCE_TEXTURE2D, 0);
 
 	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
 
@@ -1392,3 +1393,4 @@ void CMultiSpriteObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		m_ppMaterials[0]->m_pTexture->AnimateRowColumn(m_fTime);
 	}
 }
+

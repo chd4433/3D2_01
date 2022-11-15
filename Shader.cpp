@@ -954,6 +954,14 @@ CMultiSpriteObjectsShader::~CMultiSpriteObjectsShader()
 {
 }
 
+void CMultiSpriteObjectsShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+	m_nPipelineStates = 1;
+	m_ppd3dPipelineStates = new ID3D12PipelineState * [m_nPipelineStates];
+
+	CShader::CreateShader(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+}
+
 D3D12_RASTERIZER_DESC CMultiSpriteObjectsShader::CreateRasterizerState()
 {
 	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
@@ -1041,8 +1049,8 @@ void CMultiSpriteObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255);
 
 	CreateCbvSrvDescriptorHeaps(pd3dDevice, m_nObjects, 2);
-	CreateShaderVariables(pd3dDevice, pd3dCommandList);
-	CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ncbElementBytes);
+	//CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	//CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ncbElementBytes);
 	CreateShaderResourceViews(pd3dDevice, ppSpriteTextures[0], 0, 16);
 	CreateShaderResourceViews(pd3dDevice, ppSpriteTextures[1], 0, 16);
 
@@ -1091,6 +1099,8 @@ void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandLis
 
 	if (m_bActive)
 	{
+		CShader::Render(pd3dCommandList, pCamera);
+
 		XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
 		CPlayer* pPlayer = pCamera->GetPlayer();
 		XMFLOAT3 xmf3PlayerPosition = pPlayer->GetPosition();
@@ -1109,7 +1119,7 @@ void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandLis
 			}
 		}
 
-		CShader::Render(pd3dCommandList, pCamera);
+		
 	}
 }
 
@@ -1119,21 +1129,21 @@ void CMultiSpriteObjectsShader::ReleaseUploadBuffers()
 	CShader::ReleaseUploadBuffers();
 }
 
-void CMultiSpriteObjectsShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
-{
-	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
-	m_pd3dcbGameObjects = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes * m_nObjects, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
-
-	m_pd3dcbGameObjects->Map(0, NULL, (void**)&m_pcbMappedGameObjects);
-}
+//void CMultiSpriteObjectsShader::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+//{
+//	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
+//	m_pd3dcbGameObjects = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes * m_nObjects, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+//
+//	m_pd3dcbGameObjects->Map(0, NULL, (void**)&m_pcbMappedGameObjects);
+//}
 
 void CMultiSpriteObjectsShader::ReleaseShaderVariables()
 {
-	if (m_pd3dcbGameObjects)
-	{
-		m_pd3dcbGameObjects->Unmap(0, NULL);
-		m_pd3dcbGameObjects->Release();
-	}
+	//if (m_pd3dcbGameObjects)
+	//{
+	//	m_pd3dcbGameObjects->Unmap(0, NULL);
+	//	m_pd3dcbGameObjects->Release();
+	//}
 	CShader::ReleaseShaderVariables();
 }
 
