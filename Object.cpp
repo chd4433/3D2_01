@@ -1346,7 +1346,7 @@ CFog::CFog(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
 
 	CTexture* pFogTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 
-	pFogTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/fog.dds", RESOURCE_TEXTURE2D, 0);
+	pFogTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Image/Explode_8x8.dds", RESOURCE_TEXTURE2D, 0);
 
 	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
 

@@ -1072,17 +1072,23 @@ void CMultiSpriteObjectsShader::AnimateObjects(float fTimeElapsed)
 		for (int j = 0; j < m_nObjects; j++)
 		{
 			m_ppObjects[j]->Animate(fTimeElapsed);
+			m_ppObjects[j]->UpdateTransform(NULL);
 		}
 	}
 }
 
 void CMultiSpriteObjectsShader::ReleaseObjects()
 {
-	CShader::ReleaseObjects();
+	if (m_ppObjects)
+	{
+		for (int j = 0; j < m_nObjects; j++) if (m_ppObjects[j]) m_ppObjects[j]->Release();
+		delete[] m_ppObjects;
+	}
 }
 
 void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
 {
+
 	if (m_bActive)
 	{
 		XMFLOAT3 xmf3CameraPosition = pCamera->GetPosition();
@@ -1097,6 +1103,9 @@ void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandLis
 			{
 				m_ppObjects[j]->SetPosition(xmf3Position);
 				m_ppObjects[j]->SetLookAt(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
+				//m_ppObjects[j]->Animate(0.16f);
+				//m_ppObjects[j]->UpdateTransform(NULL);
+				m_ppObjects[j]->Render(pd3dCommandList, pCamera);
 			}
 		}
 
@@ -1106,6 +1115,7 @@ void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandLis
 
 void CMultiSpriteObjectsShader::ReleaseUploadBuffers()
 {
+	for (int j = 0; j < m_nObjects; j++) if (m_ppObjects[j]) m_ppObjects[j]->ReleaseUploadBuffers();
 	CShader::ReleaseUploadBuffers();
 }
 
