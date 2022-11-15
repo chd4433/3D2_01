@@ -17,6 +17,9 @@ private:
 	int									m_nReferences = 0;
 
 protected:
+	bool							m_bActive = true;
+
+protected:
 	ID3DBlob*							m_pd3dVertexShaderBlob = NULL;
 	ID3DBlob*							m_pd3dPixelShaderBlob = NULL;
 
@@ -38,6 +41,9 @@ protected:
 public:
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
+
+	void SetActive(bool bActive) { m_bActive = bActive; }
+	bool GetActive() { return(m_bActive); }
 
 	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
@@ -226,7 +232,34 @@ public:
 };
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+class CMultiSpriteObjectsShader : public CShader
+{
+public:
+	CMultiSpriteObjectsShader();
+	virtual ~CMultiSpriteObjectsShader();
 
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
+	virtual D3D12_BLEND_DESC CreateBlendState();
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext = NULL);
+	virtual void ReleaseObjects();
+
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+
+	virtual void ReleaseUploadBuffers();
+	virtual  void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void ReleaseShaderVariables();
+
+protected:
+	CGameObject** m_ppObjects = 0;
+	int								m_nObjects = 0;
+
+	ID3D12Resource* m_pd3dcbGameObjects = NULL;
+	CB_GAMEOBJECT_INFO* m_pcbMappedGameObjects = NULL;
+};
 
 
 

@@ -81,7 +81,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_pFog->SetPosition(+(257 * xmf3Scale.x * 0.5f)/2,500.f , +(257 * xmf3Scale.z * 0.5f)/2 );
 
 
-	m_nShaders = 2;
+	m_nShaders = 3;
 	m_ppShaders = new CShader*[m_nShaders];
 
 	CObjectsShader *pObjectsShader = new CObjectsShader();
@@ -94,6 +94,12 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	pBillBoredShader->CreateShader(pd3dDevice, pd3dCommandList,m_pd3dGraphicsRootSignature);
 	pBillBoredShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
 	m_ppShaders[1] = pBillBoredShader;
+
+	CMultiSpriteObjectsShader* pMultiSpriteObjectShader = new CMultiSpriteObjectsShader();
+	pMultiSpriteObjectShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
+	pMultiSpriteObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
+	pMultiSpriteObjectShader->SetActive(false);
+	m_ppShaders[2] = pMultiSpriteObjectShader;
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -410,6 +416,9 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		//case 'D': m_ppGameObjects[0]->MoveStrafe(+1.0f); break;
 		//case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
 		//case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
+		case 'F':
+			m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
+			break;
 		default:
 			break;
 		}
