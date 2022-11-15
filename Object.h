@@ -25,6 +25,14 @@ class CStandardShader;
 #define RESOURCE_TEXTURE_CUBE		0x04
 #define RESOURCE_BUFFER				0x05
 
+struct MATERIAL
+{
+	XMFLOAT4						m_xmf4Ambient;
+	XMFLOAT4						m_xmf4Diffuse;
+	XMFLOAT4						m_xmf4Specular; //(r,g,b,a=power)
+	XMFLOAT4						m_xmf4Emissive;
+};
+
 //Ãß°¡
 struct CB_GAMEOBJECT_INFO
 {
@@ -34,6 +42,11 @@ struct CB_GAMEOBJECT_INFO
 struct VS_CB_WATER_INFO
 {
 	XMFLOAT4X4						m_xmf4x4TextureAnimation;
+};
+
+struct VS_CB_TEXTURE_INFO
+{
+	XMFLOAT4X4						m_xmf4x4Texture;
 };
 
 class CGameObject;
@@ -146,6 +159,9 @@ public:
 	XMFLOAT4						m_xmf4EmissiveColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4						m_xmf4SpecularColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4						m_xmf4AmbientColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+
+	ID3D12Resource* m_pd3dcbTextureObject = NULL;
+	VS_CB_TEXTURE_INFO* m_pcbMappedTextureObject = NULL;
 
 	void SetShader(CShader *pShader);
 	void SetMaterialType(UINT nType) { m_nType |= nType; }

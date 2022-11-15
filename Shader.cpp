@@ -1053,7 +1053,7 @@ void CMultiSpriteObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 	//CreateConstantBufferViews(pd3dDevice, m_nObjects, m_pd3dcbGameObjects, ncbElementBytes);
 	CreateShaderResourceViews(pd3dDevice, ppSpriteTextures[0], 0, 16);
 	CreateShaderResourceViews(pd3dDevice, ppSpriteTextures[1], 0, 16);
-
+	
 
 	m_ppObjects = new CGameObject * [m_nObjects];
 
@@ -1069,6 +1069,7 @@ void CMultiSpriteObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 		//pSpriteObject->SetCbvGPUDescriptorHandlePtr(m_d3dCbvGPUDescriptorStartHandle.ptr + (::gnCbvSrvDescriptorIncrementSize * j));
 
 		pSpriteObject->m_fSpeed = 3.0f / (ppSpriteTextures[j]->m_nRows * ppSpriteTextures[j]->m_nCols);
+		pSpriteObject->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 		m_ppObjects[j] = pSpriteObject;
 	}
 }
@@ -1079,7 +1080,7 @@ void CMultiSpriteObjectsShader::AnimateObjects(float fTimeElapsed)
 	{
 		for (int j = 0; j < m_nObjects; j++)
 		{
-			m_ppObjects[j]->Animate(fTimeElapsed);
+ 			m_ppObjects[j]->Animate(fTimeElapsed);
 			m_ppObjects[j]->UpdateTransform(NULL);
 		}
 	}

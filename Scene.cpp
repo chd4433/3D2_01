@@ -214,7 +214,7 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dDescriptorRanges[11].RegisterSpace = 0;
 	pd3dDescriptorRanges[11].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	D3D12_ROOT_PARAMETER pd3dRootParameters[17]; //추가
+	D3D12_ROOT_PARAMETER pd3dRootParameters[18]; //추가
 
 	pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	pd3dRootParameters[0].Descriptor.ShaderRegister = 1; //Camera
@@ -295,7 +295,7 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 
 	pd3dRootParameters[15].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	pd3dRootParameters[15].Constants.Num32BitValues = 1; //Texture Animation (4x4) Matrix
-	pd3dRootParameters[15].Constants.ShaderRegister = 5; // Animation
+	pd3dRootParameters[15].Constants.ShaderRegister = 5; // water Animation
 	pd3dRootParameters[15].Constants.RegisterSpace = 0;
 	pd3dRootParameters[15].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
@@ -303,6 +303,12 @@ ID3D12RootSignature *CScene::CreateGraphicsRootSignature(ID3D12Device *pd3dDevic
 	pd3dRootParameters[16].DescriptorTable.NumDescriptorRanges = 1;
 	pd3dRootParameters[16].DescriptorTable.pDescriptorRanges = &pd3dDescriptorRanges[11]; //t27: gtxtFogTexture
 	pd3dRootParameters[16].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	pd3dRootParameters[17].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	pd3dRootParameters[17].Constants.Num32BitValues = 1; //Texture FLOAT4X4
+	pd3dRootParameters[17].Constants.ShaderRegister = 6; // 
+	pd3dRootParameters[17].Constants.RegisterSpace = 0;
+	pd3dRootParameters[17].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 
 	D3D12_STATIC_SAMPLER_DESC pd3dSamplerDescs[2];

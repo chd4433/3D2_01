@@ -300,6 +300,12 @@ void CMaterial::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_nType, 32);
 
 	if (m_pTexture) m_pTexture->UpdateShaderVariables(pd3dCommandList);
+	if (m_pcbMappedTextureObject)
+	{
+		XMStoreFloat4x4(&m_pcbMappedTextureObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_pTexture->m_xmf4x4Texture)));
+		D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbTextureObject->GetGPUVirtualAddress();
+		pd3dCommandList->SetGraphicsRootConstantBufferView(17, d3dGpuVirtualAddress);
+	}
 }
 
 void CMaterial::ReleaseShaderVariables()
@@ -492,6 +498,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 		{
 			if (m_ppMaterials[0]->m_pShader) m_ppMaterials[0]->m_pShader->Render(pd3dCommandList, pCamera);
 			m_ppMaterials[0]->UpdateShaderVariables(pd3dCommandList);
+			
 		}
 
 		if (m_ppMeshes)
@@ -499,7 +506,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			for (int i = 0; i < m_nMeshes; i++)
 			{
 				if (m_ppMeshes[i]) m_ppMeshes[i]->Render(pd3dCommandList, 0);
-				//if (m_pcbMappedGameObject) XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_pMaterial->m_pTexture->m_xmf4x4Texture)));
+				
 			}
 		}
 	}
@@ -515,6 +522,13 @@ void CGameObject::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12Graphics
 	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 
 	m_pd3dcbGameObject->Map(0, NULL, (void**)&m_pcbMappedGameObject);
+	if (m_ppMaterials[0])
+	{
+		UINT ncbElementBytes = ((sizeof(VS_CB_WATER_INFO) + 255) & ~255); //256ÀÇ ¹è¼ö
+		m_ppMaterials[0]->m_pd3dcbTextureObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+
+		m_ppMaterials[0]->m_pd3dcbTextureObject->Map(0, NULL, (void**)&m_ppMaterials[0]->m_pcbMappedTextureObject);
+	}
 }
 
 void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
