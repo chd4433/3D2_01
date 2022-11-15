@@ -1383,7 +1383,7 @@ CMultiSpriteObject::~CMultiSpriteObject()
 {
 }
 
-void CMultiSpriteObject::Animate(float fTimeElapsed)
+void CMultiSpriteObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
 	if (m_ppMaterials[0] && m_ppMaterials[0]->m_pTexture)
 	{

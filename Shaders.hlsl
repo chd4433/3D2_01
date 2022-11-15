@@ -167,6 +167,10 @@ float4 PSSkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+
+Texture2D<float4> gtxFogTexture : register(t27); //fog
+
+
 struct VS_SPRITE_TEXTURED_INPUT
 {
 	float3 position : POSITION;
@@ -187,6 +191,13 @@ VS_SPRITE_TEXTURED_OUTPUT VSSpriteAnimation(VS_SPRITE_TEXTURED_INPUT input)
 	output.uv = input.uv;
 
 	return(output);
+}
+
+float4 PSSpriteAnimation(VS_SPRITE_TEXTURED_OUTPUT input) : SV_TARGET
+{
+	float4 cColor = gtxFogTexture.Sample(gssWrap, input.uv);
+
+	return(cColor);
 }
 
 /*
@@ -437,7 +448,7 @@ float4 PSTerrainWater(VS_WATER_OUTPUT input) : SV_TARGET
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //fog
 
-Texture2D<float4> gtxFogTexture : register(t27);
+
 
 struct VS_FOG_INPUT
 {

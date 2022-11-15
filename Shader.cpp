@@ -994,6 +994,21 @@ D3D12_BLEND_DESC CMultiSpriteObjectsShader::CreateBlendState()
 	return(d3dBlendDesc);
 }
 
+D3D12_INPUT_LAYOUT_DESC CMultiSpriteObjectsShader::CreateInputLayout()
+{
+	UINT nInputElementDescs = 2;
+	D3D12_INPUT_ELEMENT_DESC* pd3dInputElementDescs = new D3D12_INPUT_ELEMENT_DESC[nInputElementDescs];
+
+	pd3dInputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	pd3dInputElementDescs[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
+	d3dInputLayoutDesc.pInputElementDescs = pd3dInputElementDescs;
+	d3dInputLayoutDesc.NumElements = nInputElementDescs;
+
+	return(d3dInputLayoutDesc);
+}
+
 D3D12_SHADER_BYTECODE CMultiSpriteObjectsShader::CreateVertexShader()
 {
 	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "VSSpriteAnimation", "vs_5_1", &m_pd3dVertexShaderBlob));
@@ -1001,7 +1016,7 @@ D3D12_SHADER_BYTECODE CMultiSpriteObjectsShader::CreateVertexShader()
 
 D3D12_SHADER_BYTECODE CMultiSpriteObjectsShader::CreatePixelShader()
 {
-	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSTextured", "ps_5_1", &m_pd3dPixelShaderBlob));
+	return(CShader::CompileShaderFromFile(L"Shaders.hlsl", "PSSpriteAnimation", "ps_5_1", &m_pd3dPixelShaderBlob));
 }
 
 void CMultiSpriteObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
@@ -1050,12 +1065,23 @@ void CMultiSpriteObjectsShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 	}
 }
 
+void CMultiSpriteObjectsShader::AnimateObjects(float fTimeElapsed)
+{
+	if (m_bActive)
+	{
+		for (int j = 0; j < m_nObjects; j++)
+		{
+			m_ppObjects[j]->Animate(fTimeElapsed);
+		}
+	}
+}
+
 void CMultiSpriteObjectsShader::ReleaseObjects()
 {
 	CShader::ReleaseObjects();
 }
 
-void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
 {
 	if (m_bActive)
 	{

@@ -417,6 +417,7 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		//case 'Q': m_ppGameObjects[0]->MoveUp(+1.0f); break;
 		//case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
 		case 'F':
+		case 'f':
 			m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
 			break;
 		default:

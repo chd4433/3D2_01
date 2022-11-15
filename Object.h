@@ -438,5 +438,5 @@ public:
 	float m_fSpeed = 0.1f;
 	float m_fTime = 0.0f;
 
-	virtual void Animate(float fTimeElapsed);
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
 };
