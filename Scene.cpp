@@ -389,7 +389,7 @@ void CScene::ReleaseShaderVariables()
 	if (m_pTerrain) m_pTerrain->ReleaseShaderVariables();
 	if (m_pSkyBox) m_pSkyBox->ReleaseShaderVariables();
 	if (m_pTerrainWater) m_pTerrainWater->ReleaseShaderVariables();
-	if (m_pFog) m_pFog->ReleaseShaderVariables();
+	//if (m_pFog) m_pFog->ReleaseShaderVariables();
 
 }
 

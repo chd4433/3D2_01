@@ -410,6 +410,7 @@ void CGameFramework::BuildObjects()
 	m_pUILayer = new UILayer(m_nSwapChainBuffers, 2, m_pd3dDevice, m_pd3dCommandQueue, m_ppd3dSwapChainBackBuffers, m_nWndClientWidth, m_nWndClientHeight);
 
 	ID2D1SolidColorBrush* pd2dBrush = m_pUILayer->CreateBrush(D2D1::ColorF(D2D1::ColorF::LawnGreen, 1.0f));
+	ID2D1SolidColorBrush* pd2dBrush2 = m_pUILayer->CreateBrush(D2D1::ColorF(D2D1::ColorF::LawnGreen, 1.0f));
 	IDWriteTextFormat* pdwTextFormat = m_pUILayer->CreateTextFormat(L"³ª´®½ºÄù¾î", m_nWndClientHeight / 20.0f);
 	//D2D1_RECT_F d2dRect = D2D1::RectF(0.0f, 0.0f, (float)m_nWndClientWidth, (float)m_nWndClientHeight); //Áß¾Ó
 	//D2D1_RECT_F d2dRect = D2D1::RectF(m_nWndClientWidth - 150, 135.0f, (float)m_nWndClientWidth, (float)m_nWndClientHeight); //·¹ÀÌ´õ ¹Ø
@@ -424,7 +425,7 @@ void CGameFramework::BuildObjects()
 	pdwTextFormat = m_pUILayer->CreateTextFormat(L"Arial", m_nWndClientHeight / 20.0f);
 	d2dRect = D2D1::RectF(0.0f, 0.0f, 100.f, 50.f);
 
-	m_pUILayer->UpdateTextOutputs(1, pstrOutputText, &d2dRect, pdwTextFormat, pd2dBrush);
+	m_pUILayer->UpdateTextOutputs(1, pstrOutputText, &d2dRect, pdwTextFormat, pd2dBrush2);
 
 
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
@@ -660,7 +661,7 @@ void CGameFramework::FrameAdvance()
 
 	WaitForGpuComplete();
 
-	m_pUILayer->Render(m_nSwapChainBufferIndex);
+	//m_pUILayer->Render(m_nSwapChainBufferIndex);
 
 #ifdef _WITH_PRESENT_PARAMETERS
 	DXGI_PRESENT_PARAMETERS dxgiPresentParameters;
