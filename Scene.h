@@ -63,6 +63,8 @@ public:
 
 	void ReleaseUploadBuffers();
 
+	bool CheckCollideBB(BoundingOrientedBox src, BoundingOrientedBox dst);
+
 	CPlayer								*m_pPlayer = NULL;
 
 public:

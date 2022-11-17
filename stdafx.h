@@ -101,6 +101,8 @@ extern ID3D12Resource* CreateTexture2DResource(ID3D12Device* pd3dDevice, ID3D12G
 
 #define OBJNUM 1
 
+#define MISSILE_NUM 20
+
 inline bool IsZero(float fValue) { return((fabsf(fValue) < EPSILON)); }
 inline bool IsEqual(float fA, float fB) { return(::IsZero(fA - fB)); }
 inline float InverseSqrt(float fValue) { return 1.0f / sqrtf(fValue); }

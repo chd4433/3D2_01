@@ -214,6 +214,9 @@ public:
 	CGameObject 					*m_pChild = NULL;
 	CGameObject 					*m_pSibling = NULL;
 	//Ãß°¡
+	BoundingOrientedBox* ObjectBB = NULL;
+	BoundingOrientedBox* ObjectBBOrg = NULL;
+
 protected:
 	ID3D12Resource* m_pd3dcbGameObject = NULL;
 	CB_GAMEOBJECT_INFO* m_pcbMappedGameObject = NULL;
@@ -241,7 +244,7 @@ public:
 	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, CMaterial *pMaterial);
 
 	virtual void ReleaseUploadBuffers();
-	virtual void UpdateBoundingBox() {};
+	virtual void UpdateBoundingBox();
 
 	const XMFLOAT4X4 GetWorld() const { return m_xmf4x4World; }
 	XMFLOAT3 GetPosition();
@@ -267,6 +270,9 @@ public:
 	void UpdateTransform(XMFLOAT4X4 *pxmf4x4Parent=NULL);
 	CGameObject *FindFrame(char *pstrFrameName);
 	BoundingOrientedBox* FindBB(float BBsize = 0.00001f);
+	//BoundingOrientedBox* FindBB(BoundingOrientedBox* bbBox = NULL);
+
+	void SetMissilePassiveTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 
 	int FindReplicatedTexture(_TCHAR* pstrTextureName, D3D12_GPU_DESCRIPTOR_HANDLE* pd3dSrvGpuDescriptorHandle);
 
@@ -343,6 +349,38 @@ private:
 public:
 	virtual void PrepareAnimate();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);
+
+};
+
+class CMissile : public CGameObject
+{
+public:
+	CMissile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
+	virtual ~CMissile();
+
+private:
+	CGameObject* m_pMainRotorFrame = NULL;
+	CGameObject* m_pTailRotorFrame = NULL;
+
+	bool                        m_bActive = true;
+	float						m_fMissileEffectiveRange = 1500.0f;
+	float						m_fMovingSpeed = 0.0f;
+	float						m_fElapsedTimeAfterFire = 0.0f;
+	float						m_fMovingDistance = 0.0f;
+
+	XMFLOAT3					m_xmf3MovingDirection = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+public:
+	virtual void PrepareAnimate();
+	virtual void Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent = NULL);
+
+	void SetActive(bool bActive) { m_bActive = bActive; }
+	bool GetActive() { return m_bActive; };
+	void SetPassiveTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+
+	void SetMovingDirection(XMFLOAT3& xmf3MovingDirection) { m_xmf3MovingDirection = Vector3::Normalize(xmf3MovingDirection); }
+	void SetMovingSpeed(float fSpeed) { m_fMovingSpeed = fSpeed; }
+	void Reset();
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

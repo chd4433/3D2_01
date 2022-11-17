@@ -152,6 +152,19 @@ protected:
 	XMFLOAT3 m_PlayerPosition;
 };
 
+class CMisilleShader : public CObjectsShader
+{
+public:
+	CMisilleShader();
+	virtual ~CMisilleShader();
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, void* pContext = NULL);
+	virtual void AnimateObjects(float fTimeElapsed);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState = 0);
+
+	void FireMissile(CGameObject* obj);
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 class CPlayerShader : public CShader
@@ -256,7 +269,10 @@ public:
 	//virtual  void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void ReleaseShaderVariables();
 
+	void SetPosition(XMFLOAT3 pos) { m_Position = pos; };
+
 protected:
+	XMFLOAT3 m_Position;
 	CGameObject** m_ppObjects = 0;
 	int								m_nObjects = 0;
 

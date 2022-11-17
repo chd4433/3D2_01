@@ -263,7 +263,7 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 
 CAirplanePlayer::~CAirplanePlayer()
 {
-	delete playerBBOrg;
+	if(playerBBOrg) delete playerBBOrg;
 }
 
 void CAirplanePlayer::PrepareAnimate()
@@ -295,15 +295,7 @@ void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
-	//if (m_pMissileFrame)
-	//{
-	//	/*XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
-	//	m_pMissileFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMissileFrame->m_xmf4x4Transform);*/
-	//	XMFLOAT3 a = Vector3::Normalize(GetLookVector());
-	//	XMMATRIX xmmtxTranslate = XMMatrixTranslation(a.x * fTimeElapsed,a.y * fTimeElapsed,a.z * fTimeElapsed);
-	//	m_pMissileFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxTranslate, m_pMissileFrame->m_xmf4x4Transform);
-	//	
-	//}
+	
 	CPlayer::Animate(fTimeElapsed, pxmf4x4Parent);
 }
 
@@ -362,6 +354,7 @@ void CAirplanePlayer::UpdateBoundingBox()
 		//cout << "Extents: " << playerBB->Extents.x << ", " << playerBB->Extents.y << ", " << playerBB->Extents.z << endl;
 	}
 }
+
 
 CCamera *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 {

@@ -99,6 +99,7 @@ public:
 	BoundingOrientedBox*		playerBB = NULL;
 	BoundingOrientedBox*		playerBBOrg = NULL;
 
+
 private:
 	virtual void PrepareAnimate();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);

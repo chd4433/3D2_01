@@ -558,6 +558,90 @@ void CObjectsShader::UpdatePlayerPos()
 		dynamic_cast<CSuperCobraObject*>(m_ppObjects[i])->SetPlayerPos(m_PlayerPosition);
 	}
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+
+CMisilleShader::CMisilleShader()
+{
+}
+
+CMisilleShader::~CMisilleShader()
+{
+}
+
+void CMisilleShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, void* pContext)
+{
+	m_nObjects = MISSILE_NUM;
+	m_ppObjects = new CGameObject * [m_nObjects];
+
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 17); //SuperCobra(17), Gunship(2)
+
+	CGameObject* pMissileModel = CGameObject::LoadGeometryFromFile2(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/missile.bin", this);
+
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		m_ppObjects[i] = new CMissile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+		m_ppObjects[i]->SetChild(pMissileModel);
+		pMissileModel->AddRef();
+		m_ppObjects[i]->SetPosition(0,0,0);
+		dynamic_cast<CMissile*>(m_ppObjects[i])->SetMovingSpeed(10.0f);
+		dynamic_cast<CMissile*>(m_ppObjects[i])->SetActive(false);
+		m_ppObjects[i]->PrepareAnimate();
+	}
+
+	CreateShaderVariables(pd3dDevice, pd3dCommandList);
+}
+
+void CMisilleShader::AnimateObjects(float fTimeElapsed)
+{
+
+}
+
+void CMisilleShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState)
+{
+	CShader::Render(pd3dCommandList, pCamera, nPipelineState);
+
+	for (int j = 0; j < m_nObjects; j++)
+	{
+		if (m_ppObjects[j])
+		{
+			if (dynamic_cast<CMissile*>(m_ppObjects[j])->GetActive())
+			{
+				m_ppObjects[j]->Animate(0.16f);
+				m_ppObjects[j]->UpdateTransform(NULL);
+				m_ppObjects[j]->Render(pd3dCommandList, pCamera);
+			}
+		}
+	}
+}
+
+void CMisilleShader::FireMissile(CGameObject* obj)
+{
+	CMissile* pMissileObj = nullptr;
+	for (int i = 0; i < MISSILE_NUM; i++)
+	{
+		if (!dynamic_cast<CMissile*>(m_ppObjects[i])->GetActive())
+		{
+			pMissileObj = dynamic_cast<CMissile*>(m_ppObjects[i]);
+			break;
+		}
+	}
+
+	if (pMissileObj)
+	{
+		XMFLOAT3 xmf3Position = obj->GetPosition();
+		XMFLOAT3 xmf3Direction = obj->GetLook();
+		XMFLOAT3 xmf3FirePosition = Vector3::Add(xmf3Position, Vector3::ScalarProduct(xmf3Direction, 6.0f, false));
+
+		pMissileObj->m_xmf4x4World = obj->m_xmf4x4World;
+		pMissileObj->m_xmf4x4Transform = obj->m_xmf4x4Transform;
+
+		//pMissileObj->SetFirePosition(xmf3FirePosition);
+		pMissileObj->SetMovingDirection(xmf3Direction);
+		pMissileObj->SetActive(true);
+	}
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1113,7 +1197,7 @@ void CMultiSpriteObjectsShader::Render(ID3D12GraphicsCommandList* pd3dCommandLis
 		{
 			if (m_ppObjects[j])
 			{
-				m_ppObjects[j]->SetPosition(xmf3Position);
+				m_ppObjects[j]->SetPosition(m_Position);
 				m_ppObjects[j]->SetLookAt(xmf3CameraPosition, XMFLOAT3(0.0f, 1.0f, 0.0f));
 				//m_ppObjects[j]->Animate(0.16f);
 				//m_ppObjects[j]->UpdateTransform(NULL);

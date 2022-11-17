@@ -81,7 +81,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_pFog->SetPosition(+(257 * xmf3Scale.x * 0.5f)/2,500.f , +(257 * xmf3Scale.z * 0.5f)/2 );
 
 
-	m_nShaders = 3;
+	m_nShaders = 4;
 	m_ppShaders = new CShader*[m_nShaders];
 
 	CObjectsShader *pObjectsShader = new CObjectsShader();
@@ -100,6 +100,12 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	pMultiSpriteObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pTerrain);
 	pMultiSpriteObjectShader->SetActive(false);
 	m_ppShaders[2] = pMultiSpriteObjectShader;
+
+	CMisilleShader* pMissileShader = new CMisilleShader();
+	pMissileShader->CreateShader(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
+	pMissileShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL);
+
+	m_ppShaders[3] = pMissileShader;
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -404,6 +410,16 @@ void CScene::ReleaseUploadBuffers()
 	for (int i = 0; i < m_nGameObjects; i++) m_ppGameObjects[i]->ReleaseUploadBuffers();
 }
 
+bool CScene::CheckCollideBB(BoundingOrientedBox src, BoundingOrientedBox dst)
+{
+	if (src.Intersects(dst))
+	{
+		return true;
+	}
+	return false;
+}
+
+
 bool CScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	return(false);
@@ -425,6 +441,10 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		case 'F':
 		case 'f':
 			m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
+			break;
+		case 'V':
+		case 'v':
+			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(m_pPlayer);
 			break;
 		default:
 			break;
@@ -461,6 +481,25 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	{
 		dynamic_cast<CObjectsShader*>(m_ppShaders[0])->SetpPos(m_pPlayer->GetPosition());
 		dynamic_cast<CObjectsShader*>(m_ppShaders[0])->UpdatePlayerPos();
+	}
+
+	CGameObject** ppMissile = dynamic_cast<CMisilleShader*>(m_ppShaders[3])->GetppObject();
+	CGameObject** ppEnemy = dynamic_cast<CObjectsShader*>(m_ppShaders[0])->GetppObject();
+	for (int i = 0; i < MISSILE_NUM; ++i)
+	{
+		if (dynamic_cast<CMissile*>(ppMissile[i])->GetActive())
+		{
+			for (int j = 0; j < OBJNUM; ++j)
+			{
+				if (CheckCollideBB(*(ppMissile[i]->ObjectBB), *(ppEnemy[j]->ObjectBB)))
+				{
+					dynamic_cast<CMultiSpriteObject*>(m_ppShaders[2])->SetPosition(ppMissile[i]->GetPosition());
+					m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
+					dynamic_cast<CMissile*>(ppMissile[i])->Reset();
+					
+				}
+			}
+		}
 	}
 }
 

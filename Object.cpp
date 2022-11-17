@@ -168,7 +168,7 @@ int CTexture::LoadTextureFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 		strcpy_s(pstrFilePath + 15 + ((bDuplicated) ? (nStrLength - 1) : nStrLength), 64 - 15 - ((bDuplicated) ? (nStrLength - 1) : nStrLength), ".dds");
 
 		size_t nConverted = 0;
-		mbstowcs_s(&nConverted, m_ppstrTextureNames[nIndex], 64, pstrFilePath, _TRUNCATE);
+		mbstowcs_s(&nConverted, m_ppstrTextureNames[nIndex], 64, pstrFilePath, _TRUNCATE);/////???
 
 #define _WITH_DISPLAY_TEXTURE_NAME
 
@@ -208,6 +208,8 @@ int CTexture::LoadTextureFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsComman
 	}
 	return(bLoaded);
 }
+
+
 
 D3D12_SHADER_RESOURCE_VIEW_DESC CTexture::GetShaderResourceViewDesc(int nIndex)
 {
@@ -438,6 +440,8 @@ CGameObject *CGameObject::FindFrame(char *pstrFrameName)
 
 BoundingOrientedBox* CGameObject::FindBB(float BBsize)
 {
+	//when size is bigger than BBsize, do return bbsize
+	//but now, this returns Null so BBsize changes Null
 	BoundingOrientedBox* bbBox = NULL;
 	float bbsize = 0.f;
 	bool checkBB = false;
@@ -445,7 +449,7 @@ BoundingOrientedBox* CGameObject::FindBB(float BBsize)
 	{
 		if (*m_ppMeshes)
 		{
-			float size = abs(m_ppMeshes[0]->m_xmOOBB.Extents.x) * abs(m_ppMeshes[0]->m_xmOOBB.Extents.x) * abs(m_ppMeshes[0]->m_xmOOBB.Extents.x);
+			float size = abs(m_ppMeshes[0]->m_xmOOBB.Extents.x) * abs(m_ppMeshes[0]->m_xmOOBB.Extents.y) * abs(m_ppMeshes[0]->m_xmOOBB.Extents.z);
 			if (BBsize > size)
 			{
 				bbsize = BBsize;
@@ -459,8 +463,21 @@ BoundingOrientedBox* CGameObject::FindBB(float BBsize)
 		}
 	}
 
-	if (m_pSibling) if (bbBox = m_pSibling->FindBB(bbsize)) return(bbBox);
-	if (m_pChild) if (bbBox = m_pChild->FindBB(bbsize)) return(bbBox);
+	if (m_pSibling)
+	{
+		BoundingOrientedBox* bSBox = m_pSibling->FindBB(bbsize);
+		float fSize =abs(bSBox->Extents.x) * abs(bSBox->Extents.y) * abs(bSBox->Extents.z);
+		if (BBsize < fSize)
+			bbBox = bSBox;
+	}
+		
+	if (m_pChild)
+	{
+		BoundingOrientedBox* bSBox = m_pSibling->FindBB(bbsize);
+		float fSize = abs(bSBox->Extents.x) * abs(bSBox->Extents.y) * abs(bSBox->Extents.z);
+		if (BBsize < fSize)
+			bbBox = bSBox;
+	}
 
 	if (checkBB)
 		return bbBox;
@@ -468,6 +485,41 @@ BoundingOrientedBox* CGameObject::FindBB(float BBsize)
 		return(NULL);
 	
 }
+
+//BoundingOrientedBox* CGameObject::FindBB(BoundingOrientedBox* bbBox)
+//{
+//	//when size is bigger than BBsize, do return bbsize
+//	//but now, this returns Null so BBsize changes Null
+//	float bbsize = 0.f;
+//	bool checkBB = false;
+//	if (m_ppMeshes)
+//	{
+//		if (*m_ppMeshes)
+//		{
+//			float org_size = abs(m_ppMeshes[0]->m_xmOOBB.Extents.x) * abs(m_ppMeshes[0]->m_xmOOBB.Extents.y) * abs(m_ppMeshes[0]->m_xmOOBB.Extents.z);
+//			float input_size = abs(bbBox->Extents.x) * abs(bbBox->Extents.y) * abs(bbBox->Extents.z);
+//			if (input_size > org_size)
+//			{
+//				checkBB = false;
+//			}
+//			else
+//			{
+//				bbsize = org_size;
+//				checkBB = true;
+//				bbBox = &(m_ppMeshes[0]->m_xmOOBB);
+//			}
+//		}
+//	}
+//
+//	if (m_pSibling) if (bbBox = m_pSibling->FindBB(bbsize)) return(bbBox);
+//	if (m_pChild) if (bbBox = m_pChild->FindBB(bbsize)) return(bbBox);
+//
+//	if (checkBB)
+//		return bbBox;
+//	else
+//		return(NULL);
+//
+//}
 
 void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
@@ -572,6 +624,15 @@ void CGameObject::ReleaseUploadBuffers()
 
 	if (m_pSibling) m_pSibling->ReleaseUploadBuffers();
 	if (m_pChild) m_pChild->ReleaseUploadBuffers();
+}
+
+void CGameObject::UpdateBoundingBox()
+{
+	if (ObjectBB && ObjectBBOrg)
+	{
+		ObjectBBOrg->Transform(*ObjectBB, XMLoadFloat4x4(&m_xmf4x4World));
+		XMStoreFloat4(&ObjectBB->Orientation, XMQuaternionNormalize(XMLoadFloat4(&ObjectBB->Orientation)));
+	}
 }
 
 void CGameObject::UpdateTransform(XMFLOAT4X4 *pxmf4x4Parent)
@@ -688,6 +749,25 @@ void CGameObject::SetLookAt(XMFLOAT3& xmf3Target, XMFLOAT3& xmf3Up)
 		m_xmf4x4World._31 = xmf3Look.x; m_xmf4x4World._32 = xmf3Look.y; m_xmf4x4World._33 = xmf3Look.z;
 		*/
 }
+
+void CGameObject::SetMissilePassiveTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	if (m_ppMaterials)
+	{
+		CTexture* pMissileTexture = new CTexture(1, RESOURCE_TEXTURE2D_ARRAY, 0, 1);
+		pMissileTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/Textures/Missile_basecolor.dds", RESOURCE_TEXTURE2D, 0);
+		for (int i = 0; i < m_nMaterials; i++)
+		{
+			m_ppMaterials[i]->SetTexture(pMissileTexture);
+			m_ppMaterials[i]->SetMaterialType(MATERIAL_ALBEDO_MAP);
+		}
+	}
+
+
+	if (m_pSibling) dynamic_cast<CMissile*>(m_pSibling)->SetPassiveTexture(pd3dDevice, pd3dCommandList);
+	if (m_pChild) dynamic_cast<CMissile*>(m_pChild)->SetPassiveTexture(pd3dDevice, pd3dCommandList);
+}
+
 
 //#define _WITH_DEBUG_FRAME_HIERARCHY
 
@@ -1067,12 +1147,18 @@ CSuperCobraObject::CSuperCobraObject(ID3D12Device* pd3dDevice, ID3D12GraphicsCom
 
 CSuperCobraObject::~CSuperCobraObject()
 {
+	if (ObjectBBOrg) delete ObjectBBOrg;
 }
 
 void CSuperCobraObject::PrepareAnimate()
 {
 	m_pMainRotorFrame = FindFrame("MainRotor");
 	m_pTailRotorFrame = FindFrame("TailRotor");
+
+	ObjectBB = FindBB();
+	ObjectBBOrg = new BoundingOrientedBox;
+
+	*ObjectBBOrg = *ObjectBB;
 }
 
 void CSuperCobraObject::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
@@ -1087,6 +1173,7 @@ void CSuperCobraObject::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
+	UpdateBoundingBox();
 	Ai();
 	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 }
@@ -1310,6 +1397,69 @@ void CMi24Object::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+CMissile::CMissile(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) : CGameObject(1, 1)
+{
+}
+
+CMissile::~CMissile()
+{
+	if (ObjectBBOrg) delete ObjectBBOrg;
+}
+
+void CMissile::PrepareAnimate()
+{
+	ObjectBB = FindBB();
+	ObjectBBOrg = new BoundingOrientedBox;
+
+	*ObjectBBOrg = *ObjectBB;
+}
+
+void CMissile::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
+{
+	XMMATRIX xmmtxRotate = XMMatrixRotationZ(XMConvertToRadians(360.0f * 1.0f) * fTimeElapsed);
+	m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_xmf4x4Transform);
+
+	UpdateBoundingBox();
+
+	m_fElapsedTimeAfterFire += fTimeElapsed;
+	float fDistance = m_fMovingSpeed * fTimeElapsed;
+
+	XMFLOAT3 xmf3Movement = Vector3::ScalarProduct(m_xmf3MovingDirection, fDistance, false);
+	XMFLOAT3 xmf3Position = GetPosition();
+	xmf3Position = Vector3::Add(xmf3Position, xmf3Movement);
+	SetPosition(xmf3Position);
+	m_fMovingDistance += fDistance;
+
+	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+}
+
+void CMissile::SetPassiveTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	if (m_ppMaterials)
+	{
+		CTexture* pMissileTexture = new CTexture(1, RESOURCE_TEXTURE2D_ARRAY, 0, 1);
+		pMissileTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/Textures/Missile_basecolor.dds", RESOURCE_TEXTURE2D, 0);
+		for (int i = 0; i < m_nMaterials; i++)
+		{
+			m_ppMaterials[i]->SetTexture(pMissileTexture);
+			m_ppMaterials[i]->SetMaterialType(MATERIAL_ALBEDO_MAP);
+		}
+	}
+	
+	
+	if (m_pSibling) dynamic_cast<CMissile*>(m_pSibling)->SetPassiveTexture(pd3dDevice, pd3dCommandList);
+	if (m_pChild) dynamic_cast<CMissile*>(m_pChild)->SetPassiveTexture(pd3dDevice, pd3dCommandList);
+}
+
+void CMissile::Reset()
+{
+	m_fMovingDistance = 0;
+	m_bActive = false;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 CHeightMapTerrain::CHeightMapTerrain(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, LPCTSTR pFileName, int nWidth, int nLength, int nBlockWidth, int nBlockLength, XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color) : CGameObject(0, 1)
 {
 	m_nWidth = nWidth;
@@ -1503,4 +1653,5 @@ void CMultiSpriteObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		m_ppMaterials[0]->m_pTexture->AnimateRowColumn(m_fTime);
 	}
 }
+
 
