@@ -83,7 +83,7 @@ public:
 	//Ãß°¡
 	CTerrainWater*				m_pTerrainWater = NULL;
 	XMFLOAT4X4					m_xmf4x4WaterAnimation;
-	CFog*						m_pFog = NULL;
+	//CFog*						m_pFog = NULL;
 
 	LIGHT								*m_pLights = NULL;
 	int									m_nLights = 0;

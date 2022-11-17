@@ -318,9 +318,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 				case VK_ESCAPE:
 					::PostQuitMessage(0);
 					break;
-				case VK_RETURN:
-					m_pScene->m_ShotObjCnt = 10;
-					break;
 				case VK_F1:
 				//case VK_F2:
 				case VK_F3:
@@ -622,7 +619,11 @@ void CGameFramework::UpdateUI()
 		wcscpy_s(m_pszEnd, 70, L"GAME CLEAR");
 		m_pUILayer->UpdateTextOutputs(3, m_pszEnd, NULL, NULL, NULL);
 	}
-
+	else if (m_pUILayer->GetPlayerHP() == 0)
+	{
+		wcscpy_s(m_pszEnd, 70, L"GAME OVER");
+		m_pUILayer->UpdateTextOutputs(3, m_pszEnd, NULL, NULL, NULL);
+	}
 	m_pUILayer->UpdateTextOutputs(0, m_pszTime, NULL, NULL, NULL);
 	m_pUILayer->UpdateTextOutputs(2, m_pszObjCnt, NULL, NULL, NULL);
 	
@@ -739,5 +740,7 @@ void CGameFramework::FrameAdvance()
 	_stprintf_s(m_pszTime , 70, _T("%d:%d"),minute, second);
 	_stprintf_s(m_pszObjCnt, 70, _T("%d/%d"), OBJNUM - m_pScene->m_ShotObjCnt, OBJNUM);
 	//::SetWindowText(m_hWnd, m_pszTime);
+
+
 }
 

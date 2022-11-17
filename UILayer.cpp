@@ -137,6 +137,10 @@ void UILayer::Render(UINT nFrame)
     D2D1_POINT_2F d2dpoint0 = d2dcenter;
 
     //Make Hp Rect
+    if (playerHp <= 0)
+    {
+        m_fpHpControl = 300.f;
+    }
     D2D1_RECT_F d2dRectHp1 = D2D1::RectF(FRAME_BUFFER_WIDTH/2-150.f, 20.0f, FRAME_BUFFER_WIDTH/2 + 150.f - m_fpHpControl, 30.f);
     D2D1_RECT_F d2dRectHp2 = D2D1::RectF(FRAME_BUFFER_WIDTH / 2 + 150.f - m_fpHpControl, 20.0f, FRAME_BUFFER_WIDTH / 2 + 150.f, 30.f);
 

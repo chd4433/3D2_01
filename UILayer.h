@@ -19,6 +19,7 @@ public:
 
     void UpdateRader();
     void SetPlayerHpCollide() { playerHp -= 1; };
+    int GetPlayerHP() {return playerHp; }
 
     ID2D1SolidColorBrush* CreateBrush(D2D1::ColorF d2dColor);
     IDWriteTextFormat* CreateTextFormat(WCHAR* pszFontName, float fFontSize);

@@ -77,8 +77,8 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_pTerrainWater = new CTerrainWater(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, 257 * xmf3Scale.x, 257 * xmf3Scale.z);
 	m_pTerrainWater->SetPosition(+(257 * xmf3Scale.x * 0.5f), 400.0f, +(257 * xmf3Scale.z * 0.5f));
 
-	m_pFog = new CFog(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, 257 * xmf3Scale.x/4, 257 * xmf3Scale.y/4);
-	m_pFog->SetPosition(+(257 * xmf3Scale.x * 0.5f)/2,500.f , +(257 * xmf3Scale.z * 0.5f)/2 );
+	//m_pFog = new CFog(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, 257 * xmf3Scale.x/4, 257 * xmf3Scale.y/4);
+	//m_pFog->SetPosition(+(257 * xmf3Scale.x * 0.5f)/2,500.f , +(257 * xmf3Scale.z * 0.5f)/2 );
 
 
 	m_nShaders = 4;
@@ -130,7 +130,7 @@ void CScene::ReleaseObjects()
 	if (m_pTerrain) delete m_pTerrain;
 	if (m_pSkyBox) delete m_pSkyBox;
 	if (m_pTerrainWater) delete m_pTerrainWater;
-	if (m_pFog) delete m_pFog;
+	//if (m_pFog) delete m_pFog;
 
 
 	if (m_ppGameObjects)
@@ -404,7 +404,7 @@ void CScene::ReleaseUploadBuffers()
 	if (m_pTerrain) m_pTerrain->ReleaseUploadBuffers();
 	if (m_pSkyBox) m_pSkyBox->ReleaseUploadBuffers();
 	if (m_pTerrainWater) m_pTerrainWater->ReleaseUploadBuffers();
-	if (m_pFog) m_pFog->ReleaseUploadBuffers();
+	//if (m_pFog) m_pFog->ReleaseUploadBuffers();
 
 	for (int i = 0; i < m_nShaders; i++) m_ppShaders[i]->ReleaseUploadBuffers();
 	for (int i = 0; i < m_nGameObjects; i++) m_ppGameObjects[i]->ReleaseUploadBuffers();
@@ -440,11 +440,7 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		//case 'R': m_ppGameObjects[0]->MoveUp(-1.0f); break;
 		case 'F':
 		case 'f':
-			m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
-			break;
-		case 'V':
-		case 'v':
-			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(m_pPlayer,SHOT_PLAYER);
+			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(m_pPlayer, SHOT_PLAYER);
 			break;
 		default:
 			break;
@@ -558,7 +554,7 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 	if (m_pSkyBox) m_pSkyBox->Render(pd3dCommandList, pCamera);
 	if (m_pTerrain) m_pTerrain->Render(pd3dCommandList, pCamera);
 	
-	if (m_pFog) m_pFog->Render(pd3dCommandList, pCamera);
+	//if (m_pFog) m_pFog->Render(pd3dCommandList, pCamera);
 
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
 	for (int i = 0; i < m_nShaders; i++) 
