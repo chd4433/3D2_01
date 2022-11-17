@@ -493,7 +493,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 			{
 				if (CheckCollideBB(*(ppMissile[i]->ObjectBB), *(ppEnemy[j]->ObjectBB)))
 				{
-					dynamic_cast<CMultiSpriteObject*>(m_ppShaders[2])->SetPosition(ppMissile[i]->GetPosition());
+					dynamic_cast<CMultiSpriteObjectsShader*>(m_ppShaders[2])->SetPosition(ppMissile[i]->GetPosition());
 					m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
 					dynamic_cast<CMissile*>(ppMissile[i])->Reset();
 					

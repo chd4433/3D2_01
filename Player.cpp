@@ -264,6 +264,7 @@ CAirplanePlayer::CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 CAirplanePlayer::~CAirplanePlayer()
 {
 	if(playerBBOrg) delete playerBBOrg;
+	if (playerBB) delete playerBB;
 }
 
 void CAirplanePlayer::PrepareAnimate()

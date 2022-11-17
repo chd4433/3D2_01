@@ -359,9 +359,6 @@ public:
 	virtual ~CMissile();
 
 private:
-	CGameObject* m_pMainRotorFrame = NULL;
-	CGameObject* m_pTailRotorFrame = NULL;
-
 	bool                        m_bActive = true;
 	float						m_fMissileEffectiveRange = 1500.0f;
 	float						m_fMovingSpeed = 0.0f;
