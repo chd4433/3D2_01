@@ -444,7 +444,7 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 			break;
 		case 'V':
 		case 'v':
-			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(m_pPlayer);
+			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(m_pPlayer,SHOT_PLAYER);
 			break;
 		default:
 			break;
@@ -483,11 +483,12 @@ void CScene::AnimateObjects(float fTimeElapsed)
 		dynamic_cast<CObjectsShader*>(m_ppShaders[0])->UpdatePlayerPos();
 	}
 
+	//check missile collision
 	CGameObject** ppMissile = dynamic_cast<CMisilleShader*>(m_ppShaders[3])->GetppObject();
 	CGameObject** ppEnemy = dynamic_cast<CObjectsShader*>(m_ppShaders[0])->GetppObject();
 	for (int i = 0; i < MISSILE_NUM; ++i)
 	{
-		if (dynamic_cast<CMissile*>(ppMissile[i])->GetActive())
+		if (dynamic_cast<CMissile*>(ppMissile[i])->GetActive() && dynamic_cast<CMissile*>(ppMissile[i])->GetShotSubject() == SHOT_PLAYER)
 		{
 			for (int j = 0; j < OBJNUM; ++j)
 			{
@@ -496,11 +497,47 @@ void CScene::AnimateObjects(float fTimeElapsed)
 					dynamic_cast<CMultiSpriteObjectsShader*>(m_ppShaders[2])->SetPosition(ppMissile[i]->GetPosition());
 					m_ppShaders[2]->SetActive(!m_ppShaders[2]->GetActive());
 					dynamic_cast<CMissile*>(ppMissile[i])->Reset();
-					
+					dynamic_cast<CSuperCobraObject*>(ppEnemy[j])->SetCollideMissile(true);
+					++m_ShotObjCnt;
 				}
 			}
 		}
 	}
+
+	for (int i = 0; i < MISSILE_NUM; ++i)
+	{
+		if (dynamic_cast<CMissile*>(ppMissile[i])->GetShotSubject() == SHOT_ENEMY)
+		{
+			if (CheckCollideBB(*(ppMissile[i]->ObjectBB), *(dynamic_cast<CAirplanePlayer*>(m_pPlayer)->playerBB)))
+			{
+				dynamic_cast<CMissile*>(ppMissile[i])->Reset();
+				m_pPlayer->SetMissileCollide(true);
+			}
+		}
+	}
+
+
+	//Enemy shot missile
+	for (int j = 0; j < OBJNUM; ++j)
+	{
+		if (dynamic_cast<CSuperCobraObject*>(ppEnemy[j])->GetShotMissile())
+		{
+			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(ppEnemy[j],SHOT_ENEMY);
+			dynamic_cast<CSuperCobraObject*>(ppEnemy[j])->SetShotMissile(false);
+		}
+	}
+
+
+	if (m_ppShaders[2]->GetActive())
+	{
+		m_fMultiShaderTimeElapsed += fTimeElapsed;
+		if (m_fMultiShaderTimeElapsed >= 1.f)
+		{
+			m_ppShaders[2]->SetActive(false);
+			m_fMultiShaderTimeElapsed = 0.0f;
+		}
+	}
+	
 }
 
 void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)

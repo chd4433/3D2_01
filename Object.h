@@ -305,19 +305,30 @@ private:
 	int							m_iMoveCnt = 0;
 	int							m_iRoteDest = 0;
 	XMFLOAT3					m_PlayerPosition;
+	bool						m_bCollideMissile = false;
+	bool						m_bStop = false;
+	bool						m_bShotMissile = false;
+	float						m_fShotDelay;
 
 public:
 	virtual void PrepareAnimate();
 	virtual void Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent = NULL);
 
 	void SetPlayerPos(XMFLOAT3 pos) { m_PlayerPosition = pos; }
+	void SetCollideMissile(bool collide) { m_bCollideMissile = collide; };
+	bool GetCollideMissile() { return m_bCollideMissile; };
 
-	void Ai();
-	void RandMove();
+	bool GetStop() { return m_bStop; };
+	void SetShotMissile(bool bShot) { m_bShotMissile = bShot; };
+	bool GetShotMissile() { return m_bShotMissile; };
+
+
+
+	void Ai(float fTimeElapsed);
 	bool CheckPlayer();
-	void shoot();
-	void RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir);
+	bool RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir);
 	void RotateYPlayer(XMFLOAT3& look, XMFLOAT3& dir);
+	bool MoveYPlayer(XMFLOAT3& player);
 };
 
 class CGunshipObject : public CGameObject
@@ -364,6 +375,7 @@ private:
 	float						m_fMovingSpeed = 0.0f;
 	float						m_fElapsedTimeAfterFire = 0.0f;
 	float						m_fMovingDistance = 0.0f;
+	int							m_ShotSubject = SHOT_DEFAULT;
 
 	XMFLOAT3					m_xmf3MovingDirection = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
@@ -374,6 +386,8 @@ public:
 	void SetActive(bool bActive) { m_bActive = bActive; }
 	bool GetActive() { return m_bActive; };
 	void SetPassiveTexture(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	void SetShotSubject(int sub) { m_ShotSubject = sub; };
+	int GetShotSubject() { return m_ShotSubject; };
 
 	void SetMovingDirection(XMFLOAT3& xmf3MovingDirection) { m_xmf3MovingDirection = Vector3::Normalize(xmf3MovingDirection); }
 	void SetMovingSpeed(float fSpeed) { m_fMovingSpeed = fSpeed; }

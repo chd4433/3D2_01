@@ -319,10 +319,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 					::PostQuitMessage(0);
 					break;
 				case VK_RETURN:
-					if (m_pUILayer)
-					{
-						m_pUILayer->m_fpHpControl += 10.f;
-					}
+					m_pScene->m_ShotObjCnt = 10;
 					break;
 				case VK_F1:
 				//case VK_F2:
@@ -407,15 +404,17 @@ void CGameFramework::BuildObjects()
 {
 	float a = XMConvertToDegrees(atan(0.5));
 
-	m_pUILayer = new UILayer(m_nSwapChainBuffers, 2, m_pd3dDevice, m_pd3dCommandQueue, m_ppd3dSwapChainBackBuffers, m_nWndClientWidth, m_nWndClientHeight);
+	m_pUILayer = new UILayer(m_nSwapChainBuffers, 4, m_pd3dDevice, m_pd3dCommandQueue, m_ppd3dSwapChainBackBuffers, m_nWndClientWidth, m_nWndClientHeight);
 
 	ID2D1SolidColorBrush* pd2dBrush = m_pUILayer->CreateBrush(D2D1::ColorF(D2D1::ColorF::LawnGreen, 1.0f));
 	ID2D1SolidColorBrush* pd2dBrush2 = m_pUILayer->CreateBrush(D2D1::ColorF(D2D1::ColorF::LawnGreen, 1.0f));
+	ID2D1SolidColorBrush* pd2dBrush3 = m_pUILayer->CreateBrush(D2D1::ColorF(D2D1::ColorF::LawnGreen, 1.0f));
+	ID2D1SolidColorBrush* pd2dBrush4 = m_pUILayer->CreateBrush(D2D1::ColorF(D2D1::ColorF::Black, 2.0f));
 	IDWriteTextFormat* pdwTextFormat = m_pUILayer->CreateTextFormat(L"³ª´®½ºÄù¾î", m_nWndClientHeight / 20.0f);
 	//D2D1_RECT_F d2dRect = D2D1::RectF(0.0f, 0.0f, (float)m_nWndClientWidth, (float)m_nWndClientHeight); //Áß¾Ó
 	//D2D1_RECT_F d2dRect = D2D1::RectF(m_nWndClientWidth - 150, 135.0f, (float)m_nWndClientWidth, (float)m_nWndClientHeight); //·¹ÀÌ´õ ¹Ø
 	//D2D1_RECT_F d2dRect = D2D1::RectF(m_nWndClientWidth - 100, m_nWndClientHeight-50.f, (float)m_nWndClientWidth, (float)m_nWndClientHeight);//¿ìÃø ÇÏ´Ü
-	D2D1_RECT_F d2dRect = D2D1::RectF(0.f, 25.f, 100.f, 75.f);//¿ìÃø ÇÏ´Ü
+	D2D1_RECT_F d2dRect = D2D1::RectF(0.f, 25.f, 100.f, 75.f);
 
 	m_pUILayer->UpdateTextOutputs(0, NULL, &d2dRect, pdwTextFormat, pd2dBrush);
 
@@ -426,6 +425,16 @@ void CGameFramework::BuildObjects()
 	d2dRect = D2D1::RectF(0.0f, 0.0f, 100.f, 50.f);
 
 	m_pUILayer->UpdateTextOutputs(1, pstrOutputText, &d2dRect, pdwTextFormat, pd2dBrush2);
+
+	pdwTextFormat = m_pUILayer->CreateTextFormat(L"Arial", m_nWndClientHeight / 10.0f);
+	d2dRect = D2D1::RectF(m_nWndClientWidth - 150, m_nWndClientHeight - 70.f, (float)m_nWndClientWidth, (float)m_nWndClientHeight);
+	m_pUILayer->UpdateTextOutputs(2, NULL, &d2dRect, pdwTextFormat, pd2dBrush3);
+
+	WCHAR pstrOutputText2[256];
+	wcscpy_s(pstrOutputText2, 256, L"");
+	pdwTextFormat = m_pUILayer->CreateTextFormat(L"Arial", m_nWndClientHeight / 10.0f);
+	d2dRect = D2D1::RectF(m_nWndClientWidth/2 - 80, m_nWndClientHeight/2 - 70.f, m_nWndClientWidth / 2 + 80, m_nWndClientHeight / 2 + 30.f);
+	m_pUILayer->UpdateTextOutputs(3, pstrOutputText2, &d2dRect, pdwTextFormat, pd2dBrush4);
 
 
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
@@ -495,7 +504,7 @@ void CGameFramework::ProcessInput()
 		if (pKeysBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
 		if (pKeysBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
 		if (pKeysBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeysBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
+		if (pKeysBuffer[VK_PRIOR] & 0xF0 && m_pPlayer->GetPosition().y < MAX_HEGIHT) dwDirection |= DIR_UP;
 		if (pKeysBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
 
 		float cxDelta = 0.0f, cyDelta = 0.0f;
@@ -519,7 +528,16 @@ void CGameFramework::ProcessInput()
 					m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
 			}
 
-			if (dwDirection && !m_pPlayer->GetTerrainCollide()) m_pPlayer->Move(dwDirection, 1.25f, false);
+			if (dwDirection)
+			{
+				m_pPlayer->Move(dwDirection, 1.25f, false);
+				dwPlayerDirection = dwDirection;
+			}
+				
+			//if (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
+			//	m_pPlayer->Move(dwDirection, -1.5f, false);
+
+			//if (dwDirection && !m_pPlayer->GetTerrainCollide()) m_pPlayer->Move(dwDirection, 1.25f, false);
 			//while (m_pPlayer->GetTerrainCollide())
 			//{
 			//	m_pPlayer->Move(dwDirection, -1.5f, false);
@@ -528,24 +546,26 @@ void CGameFramework::ProcessInput()
 			//	m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());;
 			//	//m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());
 			//}
-			for (int i = 0; i < 10; ++i)
-			{
-				if (m_pPlayer->GetTerrainCollide())
-				{
-					m_pPlayer->Move(dwDirection, -0.5f, false);
-					m_pPlayer->OnPrepareRender();
-					m_pPlayer->UpdateBoundingBox();
-					m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());;
-					//m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());
-				}
-				else
-					break;
-			}
-			//if (m_pPlayer->GetTerrainCollide())
+
+			//for (int i = 0; i < 10; ++i)
 			//{
-			//	m_pPlayer->Move(dwDirection, -1.5f, false);
-			//	m_pPlayer->SetTerrainCollide(false);
+			//	if (m_pPlayer->GetTerrainCollide())
+			//	{
+			//		m_pPlayer->Move(dwDirection, -0.5f, false);
+			//		m_pPlayer->OnPrepareRender();
+			//		m_pPlayer->UpdateBoundingBox();
+			//		m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());;
+			//		//m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());
+			//	}
+			//	else
+			//		break;
 			//}
+
+			/*if (m_pPlayer->GetTerrainCollide())
+			{
+				m_pPlayer->Move(dwDirection, -1.5f, false);
+				m_pPlayer->SetTerrainCollide(false);
+			}*/
 
 		}
 	}
@@ -590,7 +610,28 @@ void CGameFramework::MoveToNextFrame()
 
 void CGameFramework::UpdateUI()
 {
+	//while (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
+	//{
+	//	m_pPlayer->Move(dwPlayerDirection, -0.5f, false);
+	//	m_pPlayer->OnPrepareRender();
+	//	m_pPlayer->UpdateBoundingBox();
+	//}
+
+	if (m_pScene->m_ShotObjCnt == OBJNUM)
+	{
+		wcscpy_s(m_pszEnd, 70, L"GAME CLEAR");
+		m_pUILayer->UpdateTextOutputs(3, m_pszEnd, NULL, NULL, NULL);
+	}
+
 	m_pUILayer->UpdateTextOutputs(0, m_pszTime, NULL, NULL, NULL);
+	m_pUILayer->UpdateTextOutputs(2, m_pszObjCnt, NULL, NULL, NULL);
+	
+	if (m_pUILayer && m_pPlayer->GetMissileCollide())
+	{
+		m_pUILayer->m_fpHpControl += 20.f;
+		m_pUILayer->SetPlayerHpCollide();
+		m_pPlayer->SetMissileCollide(false);
+	}
 }
 
 //#define _WITH_PLAYER_TOP
@@ -696,6 +737,7 @@ void CGameFramework::FrameAdvance()
 	int minute = (int)result / 60;
 	int second = (int)result % 60;
 	_stprintf_s(m_pszTime , 70, _T("%d:%d"),minute, second);
+	_stprintf_s(m_pszObjCnt, 70, _T("%d/%d"), OBJNUM - m_pScene->m_ShotObjCnt, OBJNUM);
 	//::SetWindowText(m_hWnd, m_pszTime);
 }
 

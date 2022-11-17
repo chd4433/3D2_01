@@ -422,42 +422,54 @@ float Random(float fMin, float fMax)
 	return(fRandomValue);
 }
 
-float Random()
+int RandomXZ()
 {
-	return(rand() / float(RAND_MAX));
+	std::random_device rd;
+	std::default_random_engine dre(rd());
+	std::uniform_int_distribution<int> uid(1000, 3000);
+	int iRand = uid(dre);
+	return iRand;
 }
 
-XMFLOAT3 RandomPositionInSphere(XMFLOAT3 xmf3Center, float fRadius, int nColumn, int nColumnSpace)
+int RandomY()
 {
-    float fAngle = Random() * 360.0f * (2.0f * 3.14159f / 360.0f);
+	std::random_device rd;
+	std::default_random_engine dre(rd());
+	std::uniform_int_distribution<int> uid(700, 1500);
+	int iRand = uid(dre);
+	return iRand;
+}
 
+XMFLOAT3 RandomPosition()
+{
 	XMFLOAT3 xmf3Position;
-    xmf3Position.x = xmf3Center.x + fRadius * sin(fAngle);
-    xmf3Position.y = xmf3Center.y - (nColumn * float(nColumnSpace) / 2.0f) + (nColumn * nColumnSpace) + Random();
-    xmf3Position.z = xmf3Center.z + fRadius * cos(fAngle);
+	xmf3Position.x = RandomXZ();
+    xmf3Position.y = RandomY();
+	xmf3Position.z = RandomXZ();
 
 	return(xmf3Position);
 }
 
+int RandRadius()
+{
+	std::random_device rd;
+	std::default_random_engine dre(rd());
+	std::uniform_int_distribution<int> uid(20, 2000);
+	int iRand = uid(dre);
+	return iRand;
+}
+
+
 void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext)
 {
-	m_nObjects = 1;
+	m_nObjects = OBJNUM;
 	m_ppObjects = new CGameObject*[m_nObjects];
 
 	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 17); //SuperCobra(17), Gunship(2)
-	//미사일 파일이 이상하게 읽힘 텍스트 파일로 확인중!!
+
 	CGameObject *pSuperCobraModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/SuperCobra.bin", this);
 	//CGameObject* pSuperCobraModel = CGameObject::LoadGeometryFromFile2(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/missile.bin", this);
 	//CGameObject* pGunshipModel = CGameObject::LoadGeometryFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Gunship.bin", this);
-	for (int i = 0; i < pSuperCobraModel->m_nMeshes; ++i)
-	{
-		if (*(pSuperCobraModel->m_ppMeshes))
-		{
-			cout << "Object" << endl;
-			cout << "Center: " << pSuperCobraModel->m_ppMeshes[i]->m_xmOOBB.Center.x << ", " << pSuperCobraModel->m_ppMeshes[i]->m_xmOOBB.Center.y << ", " << pSuperCobraModel->m_ppMeshes[i]->m_xmOOBB.Center.z << endl;
-			cout << "Extents: " << pSuperCobraModel->m_ppMeshes[i]->m_xmOOBB.Extents.x << ", " << pSuperCobraModel->m_ppMeshes[i]->m_xmOOBB.Extents.y << ", " << pSuperCobraModel->m_ppMeshes[i]->m_xmOOBB.Extents.z << endl;
-		}
-	}
 
 	int nColumnSpace = 5, nColumnSize = 30;           
     int nFirstPassColumnSize = (m_nObjects % nColumnSize) > 0 ? (nColumnSize - 1) : nColumnSize;
@@ -482,8 +494,8 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 			m_ppObjects[nObjects] = new CSuperCobraObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
 			m_ppObjects[nObjects]->SetChild(pSuperCobraModel);
 			pSuperCobraModel->AddRef();
-			XMFLOAT3 xmf3RandomPosition = RandomPositionInSphere(XMFLOAT3(920.0f, 0.0f, 1200.0f), Random(20.0f, 150.0f), h - int(floor(nColumnSize / 2.0f)), nColumnSpace);
-			m_ppObjects[nObjects]->SetPosition(xmf3RandomPosition.x, xmf3RandomPosition.y + 750.0f, xmf3RandomPosition.z);
+			XMFLOAT3 xmf3RandomPosition = RandomPosition();
+			m_ppObjects[nObjects]->SetPosition(xmf3RandomPosition.x, xmf3RandomPosition.y , xmf3RandomPosition.z);
 			m_ppObjects[nObjects]->Rotate(0.0f, 90.0f, 0.0f);
 			m_ppObjects[nObjects++]->PrepareAnimate();
 		}
@@ -508,8 +520,8 @@ void CObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsComman
 			m_ppObjects[nObjects] = new CSuperCobraObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
 			m_ppObjects[nObjects]->SetChild(pSuperCobraModel);
 			pSuperCobraModel->AddRef();
-			XMFLOAT3 xmf3RandomPosition = RandomPositionInSphere(XMFLOAT3(920.0f, 0.0f, 1200.0f), Random(20.0f, 150.0f), nColumnSize - int(floor(nColumnSize / 2.0f)), nColumnSpace);
-			m_ppObjects[nObjects]->SetPosition(xmf3RandomPosition.x, xmf3RandomPosition.y + 850.0f, xmf3RandomPosition.z);
+			XMFLOAT3 xmf3RandomPosition = RandomPosition();
+			m_ppObjects[nObjects]->SetPosition(xmf3RandomPosition.x, xmf3RandomPosition.y, xmf3RandomPosition.z);
 			m_ppObjects[nObjects]->Rotate(0.0f, 90.0f, 0.0f);
 			m_ppObjects[nObjects++]->PrepareAnimate();
         }
@@ -615,7 +627,7 @@ void CMisilleShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera*
 	}
 }
 
-void CMisilleShader::FireMissile(CGameObject* obj)
+void CMisilleShader::FireMissile(CGameObject* obj, int ShotSubject)
 {
 	CMissile* pMissileObj = nullptr;
 	for (int i = 0; i < MISSILE_NUM; i++)
@@ -638,6 +650,7 @@ void CMisilleShader::FireMissile(CGameObject* obj)
 
 		//pMissileObj->SetFirePosition(xmf3FirePosition);
 		pMissileObj->SetMovingDirection(xmf3Direction);
+		pMissileObj->SetShotSubject(ShotSubject);
 		pMissileObj->SetActive(true);
 	}
 }

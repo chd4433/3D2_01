@@ -66,6 +66,8 @@ public:
 	bool CheckCollideBB(BoundingOrientedBox src, BoundingOrientedBox dst);
 
 	CPlayer								*m_pPlayer = NULL;
+	float								m_fMultiShaderTimeElapsed = 0.0f;
+	int									m_ShotObjCnt = 0;
 
 public:
 	ID3D12RootSignature					*m_pd3dGraphicsRootSignature = NULL;

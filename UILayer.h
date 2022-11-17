@@ -18,6 +18,7 @@ public:
     void ReleaseResources();
 
     void UpdateRader();
+    void SetPlayerHpCollide() { playerHp -= 1; };
 
     ID2D1SolidColorBrush* CreateBrush(D2D1::ColorF d2dColor);
     IDWriteTextFormat* CreateTextFormat(WCHAR* pszFontName, float fFontSize);
@@ -54,4 +55,5 @@ public:
     bool bUpdate = true;
 
     XMFLOAT3 PlayerPosition;
+    int playerHp = 15;
 };

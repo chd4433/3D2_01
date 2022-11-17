@@ -162,7 +162,7 @@ public:
 	virtual void AnimateObjects(float fTimeElapsed);
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int nPipelineState = 0);
 
-	void FireMissile(CGameObject* obj);
+	void FireMissile(CGameObject* obj, int ShotSubject);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

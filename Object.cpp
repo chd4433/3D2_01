@@ -675,7 +675,7 @@ void CGameObject::UpdateBoundingBox()
 {
 	if (ObjectBB && ObjectBBOrg)
 	{
-		ObjectBBOrg->Transform(*ObjectBB, XMLoadFloat4x4(&m_xmf4x4World));
+ 		ObjectBBOrg->Transform(*ObjectBB, XMLoadFloat4x4(&m_xmf4x4World));
 		XMStoreFloat4(&ObjectBB->Orientation, XMQuaternionNormalize(XMLoadFloat4(&ObjectBB->Orientation)));
 	}
 }
@@ -1202,6 +1202,7 @@ void CSuperCobraObject::PrepareAnimate()
 	m_pTailRotorFrame = FindFrame("TailRotor");
 
 	ObjectBB = FindBB();
+
 	ObjectBBOrg = new BoundingOrientedBox;
 
 	*ObjectBBOrg = *ObjectBB;
@@ -1209,19 +1210,37 @@ void CSuperCobraObject::PrepareAnimate()
 
 void CSuperCobraObject::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 {
-	if (m_pMainRotorFrame)
+	if (!m_bStop)
 	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
-		m_pMainRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame->m_xmf4x4Transform);
+		if (m_bCollideMissile)
+		{
+			MoveUp(-1.0f * fTimeElapsed);
+			m_xmf4x4Transform = Matrix4x4::Multiply(XMMatrixRotationY(XMConvertToRadians(360.0f * 0.05f) * fTimeElapsed), m_xmf4x4Transform);
+			UpdateTransform(NULL);
+			if (GetPosition().y <= 100.f)
+			{
+				m_bStop = true;
+			}
+		}
+		else
+		{
+			if (m_pMainRotorFrame)
+			{
+				XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
+				m_pMainRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame->m_xmf4x4Transform);
+			}
+			if (m_pTailRotorFrame)
+			{
+				XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
+				m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
+			}
+			Ai(fTimeElapsed);
+		}
+		//UpdateBoundingBox();
+		
+		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 	}
-	if (m_pTailRotorFrame)
-	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
-		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
-	}
-	UpdateBoundingBox();
-	Ai();
-	CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
+
 }
 
 int RandRotate()
@@ -1233,11 +1252,23 @@ int RandRotate()
 	return iRand;
 }
 
-void CSuperCobraObject::Ai()
+void CSuperCobraObject::Ai(float fTimeElapsed)
 {
 	if (CheckPlayer())
 	{
-		shoot();
+		XMFLOAT3 xmf3Dir = Vector3::Normalize(Vector3::Subtract(m_PlayerPosition, GetPosition()));
+		bool checkR = RotateXZPlayer(GetLook(), xmf3Dir);
+		bool checkM = MoveYPlayer(m_PlayerPosition);
+		if (checkR && checkM)
+		{
+			if (m_fShotDelay == 0.f)
+				m_bShotMissile = true;
+		}
+		m_fShotDelay += fTimeElapsed;
+		if (m_fShotDelay >= 10.f)
+		{
+			m_fShotDelay = 0.f;
+		}
 	}
 	else
 	{
@@ -1296,29 +1327,20 @@ void CSuperCobraObject::Ai()
 	}
 }
 
-void CSuperCobraObject::RandMove()
-{
-}
 
 bool CSuperCobraObject::CheckPlayer()
 {
 	XMFLOAT3 pos = GetPosition();
 	float dist = sqrt(pow(m_PlayerPosition.x - pos.x, 2) + pow(m_PlayerPosition.y - pos.y, 2) + pow(m_PlayerPosition.z - pos.z, 2));
-	if (dist < 100.f)
+	if (dist < 200.f)
 	{
-		XMFLOAT3 xmf3Dir = Vector3::Normalize(Vector3::Subtract(m_PlayerPosition, GetPosition()));
-		RotateXZPlayer(GetLook(), xmf3Dir);
-		//RotateYPlayer(GetLook(), xmf3Dir);
 		return true;
+		//RotateYPlayer(GetLook(), xmf3Dir);
 	}
 	return false;
 }
 
-void CSuperCobraObject::shoot()
-{
-}
-
-void CSuperCobraObject::RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir)
+bool CSuperCobraObject::RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir)
 {
 	XMFLOAT3 xmf3VecLook = look;
 	XMFLOAT3 xmf3VecDir = dir;
@@ -1330,15 +1352,18 @@ void CSuperCobraObject::RotateXZPlayer(XMFLOAT3& look, XMFLOAT3& dir)
 	if (angle > 5.f)
 	{
 		Rotate(0.f, 1.f, 0.f);
+		return false;
 	}
 	else if (angle < -5.f)
 	{
 		Rotate(0.f, -1.f, 0.f);
+		return false;
 	}
 	else
 	{
 		Rotate(0.f, angle, 0.f);
-		RotateYPlayer(look, dir); //보류
+		//RotateYPlayer(look, dir); //보류
+		return true;
 	}
 
 }
@@ -1369,6 +1394,27 @@ void CSuperCobraObject::RotateYPlayer(XMFLOAT3& look, XMFLOAT3& dir)
 	//xz 다 움직이고 y움직이면 각도는 맞음
 
 
+}
+
+bool CSuperCobraObject::MoveYPlayer(XMFLOAT3& player)
+{
+	float YDifference = player.y - GetPosition().y ;
+	if (YDifference > 5.f)
+	{
+		MoveUp(0.2f);
+		UpdateTransform(NULL);
+		return false;
+	}
+	else if (YDifference < -5.f)
+	{
+		if (GetPosition().y > 700.f)
+		{
+			MoveUp(-0.2f);
+			UpdateTransform(NULL);
+		}
+		return false;
+	}
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1456,8 +1502,9 @@ CMissile::~CMissile()
 void CMissile::PrepareAnimate()
 {
 	ObjectBB = FindBB();
+	ObjectBB->Center.y -= 84;
 	ObjectBB->Extents.x *= 0.1;
-	//ObjectBB->Extents.y *= 0.1;
+	ObjectBB->Extents.y *= 0.1;
 	ObjectBB->Extents.z *= 0.1;
 	ObjectBBOrg = new BoundingOrientedBox;
 
@@ -1481,6 +1528,8 @@ void CMissile::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		xmf3Position = Vector3::Add(xmf3Position, xmf3Movement);
 		SetPosition(xmf3Position);
 		m_fMovingDistance += fDistance;
+		if (m_fMovingDistance >= 1500.f)
+			Reset();
 
 		CGameObject::Animate(fTimeElapsed, pxmf4x4Parent);
 	}
@@ -1509,6 +1558,7 @@ void CMissile::Reset()
 	m_fMovingDistance = 0;
 	m_bActive = false;
 	SetPosition(0,0,0);
+	m_ShotSubject = SHOT_DEFAULT;
 	UpdateBoundingBox();
 }
 

@@ -94,6 +94,9 @@ private:
 
 	_TCHAR						m_pszFrameRate[70];
 	_TCHAR						m_pszTime[70];
+	_TCHAR						m_pszObjCnt[70];
+	_TCHAR						m_pszEnd[70];
 	clock_t						startTime;
+	DWORD dwPlayerDirection = 0;
 };
 

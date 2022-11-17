@@ -257,6 +257,11 @@ void UILayer::UpdateRader()
         {
             bShowObj[i] = true;
         }
+        if (ObjPosition[i].y < 600.f)
+        {
+            bShowObj[i] = false;
+        }
+            
 
         if (bShowObj[i])
         {

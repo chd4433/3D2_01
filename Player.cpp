@@ -345,6 +345,31 @@ void CAirplanePlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 		
 }
 
+bool CAirplanePlayer::OnPlayerUpdateCallback()
+{
+	bool Check = false;
+	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)m_pPlayerUpdatedContext;
+	XMFLOAT3 xmf3Scale = pTerrain->GetScale();
+	//XMFLOAT3 xmf3CameraPosition = m_pCamera->GetPosition();
+	//bool bReverseQuad = ((z % 2) != 0);
+	XMFLOAT3 left;
+	XMFLOAT3 right;
+	XMStoreFloat3(&left, XMLoadFloat3(&playerBB->Center) - XMLoadFloat3(&playerBB->Extents));
+	XMStoreFloat3(&right, XMLoadFloat3(&playerBB->Center) + XMLoadFloat3(&playerBB->Extents));
+
+
+	float fHeight1 = pTerrain->GetHeight(left.x, left.z);
+	float fHeight2 = pTerrain->GetHeight(right.x, right.z) + 5.0f;
+
+	if (left.y <= fHeight1 || right.y <= fHeight2)
+	{
+		return true;
+	}
+	else
+		return false;
+
+}
+
 void CAirplanePlayer::UpdateBoundingBox()
 {
 	if (playerBB && playerBBOrg)
