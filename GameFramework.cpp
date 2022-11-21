@@ -531,39 +531,6 @@ void CGameFramework::ProcessInput()
 				dwPlayerDirection = dwDirection;
 			}
 				
-			//if (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
-			//	m_pPlayer->Move(dwDirection, -1.5f, false);
-
-			//if (dwDirection && !m_pPlayer->GetTerrainCollide()) m_pPlayer->Move(dwDirection, 1.25f, false);
-			//while (m_pPlayer->GetTerrainCollide())
-			//{
-			//	m_pPlayer->Move(dwDirection, -1.5f, false);
-			//	m_pPlayer->OnPrepareRender();
-			//	m_pPlayer->UpdateBoundingBox();
-			//	m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());;
-			//	//m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());
-			//}
-
-			//for (int i = 0; i < 10; ++i)
-			//{
-			//	if (m_pPlayer->GetTerrainCollide())
-			//	{
-			//		m_pPlayer->Move(dwDirection, -0.5f, false);
-			//		m_pPlayer->OnPrepareRender();
-			//		m_pPlayer->UpdateBoundingBox();
-			//		m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());;
-			//		//m_pPlayer->OnPlayerUpdateCallback(m_GameTimer.GetTimeElapsed());
-			//	}
-			//	else
-			//		break;
-			//}
-
-			/*if (m_pPlayer->GetTerrainCollide())
-			{
-				m_pPlayer->Move(dwDirection, -1.5f, false);
-				m_pPlayer->SetTerrainCollide(false);
-			}*/
-
 		}
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
@@ -607,12 +574,12 @@ void CGameFramework::MoveToNextFrame()
 
 void CGameFramework::UpdateUI()
 {
-	//while (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
-	//{
-	//	m_pPlayer->Move(dwPlayerDirection, -0.5f, false);
-	//	m_pPlayer->OnPrepareRender();
-	//	m_pPlayer->UpdateBoundingBox();
-	//}
+	while (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
+	{
+		m_pPlayer->Move(dwPlayerDirection, -0.5f, false);
+		m_pPlayer->OnPrepareRender();
+		m_pPlayer->UpdateBoundingBox();
+	}
 
 	if (m_pScene->m_ShotObjCnt == OBJNUM)
 	{
