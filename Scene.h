@@ -8,6 +8,7 @@
 #include "Player.h"
 
 #define MAX_LIGHTS			16 
+#define MAX_MATERIALS			8 
 
 #define POINT_LIGHT			1
 #define SPOT_LIGHT			2
@@ -37,6 +38,11 @@ struct LIGHTS
 	int						m_nLights;
 };
 
+struct MATERIALS
+{
+	MATERIAL				m_pReflections[MAX_MATERIALS];
+};
+
 class CScene
 {
 public:
@@ -61,9 +67,15 @@ public:
     void AnimateObjects(float fTimeElapsed);
     void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 
+	void OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);
+	void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent);
+
 	void ReleaseUploadBuffers();
 
 	bool CheckCollideBB(BoundingOrientedBox src, BoundingOrientedBox dst);
+
+	CShader** GetShader() { return m_ppShaders; };
+	CDynamicCubeMappingShader** GetDynamicShader() { return m_ppEnvironmentMappingShaders; };
 
 	CPlayer								*m_pPlayer = NULL;
 	float								m_fMultiShaderTimeElapsed = 0.0f;
@@ -92,4 +104,13 @@ public:
 
 	ID3D12Resource						*m_pd3dcbLights = NULL;
 	LIGHTS								*m_pcbMappedLights = NULL;
+
+
+	MATERIALS* m_pMaterials = NULL;
+
+	ID3D12Resource* m_pd3dcbMaterials = NULL;
+	MATERIAL* m_pcbMappedMaterials = NULL;
+
+	CDynamicCubeMappingShader** m_ppEnvironmentMappingShaders = NULL;
+	int							m_nEnvironmentMappingShaders = 0;
 };
