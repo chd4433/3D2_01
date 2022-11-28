@@ -1798,15 +1798,6 @@ CDynamicCubeMappingObject::CDynamicCubeMappingObject(ID3D12Device* pd3dDevice, I
 		d3dRtvCPUDescriptorHandle.ptr += ::gnRtvDescriptorIncrementSize;
 	}
 
-
-
-	//CMaterial* pMaterial = new CMaterial();
-	//pMaterial->m_pReflection = new MATERIAL;
-	//pMaterial->m_pReflection->m_xmf4Ambient = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	//pMaterial->m_pReflection->m_xmf4Diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	//pMaterial->m_pReflection->m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 3.0f);
-	//pMaterial->m_pReflection->m_xmf4Emissive = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-
 	CMaterial* pMaterial = new CMaterial();
 	pMaterial->m_xmf4AmbientColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	pMaterial->m_xmf4AlbedoColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
