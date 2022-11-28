@@ -1518,7 +1518,7 @@ void CMissile::Animate(float fTimeElapsed, XMFLOAT4X4* pxmf4x4Parent)
 		XMMATRIX xmmtxRotate = XMMatrixRotationZ(XMConvertToRadians(360.0f * 5.0f) * fTimeElapsed);
 		m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_xmf4x4Transform);
 
-		UpdateBoundingBox();
+		//UpdateBoundingBox();
 
 		m_fElapsedTimeAfterFire += fTimeElapsed * 5.0f;
 		float fDistance = m_fMovingSpeed * fTimeElapsed * 5.0f;

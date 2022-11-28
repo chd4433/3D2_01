@@ -1501,8 +1501,8 @@ void CDynamicCubeMappingShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12Gra
 		float xPosition = xmf2TerrainCenter.x + ((i + 1) * 150.0f) * ((i % 2) ? +1.0f : -1.0f);
 		float zPosition = xmf2TerrainCenter.y + ((i + 1) * 150.0f) * ((i % 2) ? +1.0f : -1.0f);
 		float fHeight = pTerrain->GetHeight(xPosition, zPosition);
-		//m_ppObjects[i]->SetPosition(xPosition, fHeight + 150.0f, zPosition);
-		m_ppObjects[i]->SetPosition(920, 720, 1270);
+		m_ppObjects[i]->SetPosition(xPosition, fHeight + 150.0f, zPosition);
+		//m_ppObjects[i]->SetPosition(920, 720, 1270);
 		//m_ppObjects[i]->SetCbvGPUDescriptorHandlePtr(d3dCbvGPUDescriptorStartHandle.ptr);
 
 		d3dCbvGPUDescriptorStartHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
