@@ -1,6 +1,6 @@
 //--------------------------------------------------------------------------------------
 #define MAX_LIGHTS			16 
-#define MAX_MATERIALS		512 
+#define MAX_MATERIALS		8 
 
 #define POINT_LIGHT			1
 #define SPOT_LIGHT			2
@@ -32,6 +32,11 @@ cbuffer cbLights : register(b4)
 	LIGHT					gLights[MAX_LIGHTS];
 	float4					gcGlobalAmbientLight;
 	int						gnLights;
+};
+
+cbuffer cbMaterial : register(b7)
+{
+	MATERIAL			gMaterials[MAX_MATERIALS];
 };
 
 float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)

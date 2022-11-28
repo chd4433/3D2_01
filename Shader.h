@@ -270,11 +270,13 @@ public:
 	virtual void ReleaseShaderVariables();
 
 	void SetPosition(XMFLOAT3 pos) { m_Position = pos; };
+	void SetPlayer(CPlayer* pPlayer) { m_pPlayer = pPlayer; };
 
 protected:
 	XMFLOAT3 m_Position;
 	CGameObject** m_ppObjects = 0;
 	int								m_nObjects = 0;
+	CPlayer* m_pPlayer;
 
 	//ID3D12Resource* m_pd3dcbGameObjects = NULL;
 	//CB_GAMEOBJECT_INFO* m_pcbMappedGameObjects = NULL;
@@ -322,4 +324,36 @@ public:
 	virtual D3D12_BLEND_DESC CreateBlendState();
 
 	virtual void CreateShader(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+class CDynamicCubeMappingShader : public CObjectsShader
+{
+public:
+	CDynamicCubeMappingShader(UINT nCubeMapSize = 256);
+	virtual ~CDynamicCubeMappingShader();
+
+	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, void* pContext = NULL);
+	virtual void ReleaseObjects();
+
+	virtual void ReleaseUploadBuffers();
+
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void OnPreRender(ID3D12Device* pd3dDevice, ID3D12CommandQueue* pd3dCommandQueue, ID3D12Fence* pd3dFence, HANDLE hFenceEvent, CScene* pScene);
+
+
+protected:
+	ULONG							m_nCubeMapSize = 256;
+
+	ID3D12CommandAllocator* m_pd3dCommandAllocator = NULL;
+	ID3D12GraphicsCommandList* m_pd3dCommandList = NULL;
+
+	ID3D12DescriptorHeap* m_pd3dRtvDescriptorHeap = NULL;
+	ID3D12DescriptorHeap* m_pd3dDsvDescriptorHeap = NULL;
 };

@@ -442,6 +442,11 @@ void CGameFramework::BuildObjects()
 	CAirplanePlayer *pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 	pAirplanePlayer->SetPosition(XMFLOAT3(920.0f, 745.0f, 1270.0));
 	m_pScene->m_pPlayer = m_pPlayer = pAirplanePlayer;
+	dynamic_cast<CMultiSpriteObjectsShader*>(m_pScene->GetShader()[2])->SetPlayer(m_pPlayer);
+	for (int i = 0; i < dynamic_cast<CDynamicCubeMappingShader*>(m_pScene->GetDynamicShader()[0])->GetObjectNum(); ++i)
+	{
+		dynamic_cast<CDynamicCubeMappingObject*>(dynamic_cast<CDynamicCubeMappingShader*>(m_pScene->GetDynamicShader()[0])->GetppObject()[i])->SetPlayer(m_pPlayer);
+	}	
 	m_pCamera = m_pPlayer->GetCamera();
 	//terrain info 
 	m_pPlayer->SetPlayerUpdatedContext(m_pScene->m_pTerrain);
@@ -613,6 +618,7 @@ void CGameFramework::FrameAdvance()
     AnimateObjects();
 
 	UpdateUI();
+
 	//show objposion in rader 
 	CGameObject** pp = dynamic_cast<CObjectsShader*>(m_pScene->m_ppShaders[0])->GetppObject();
 	for (int i = 0; i < OBJNUM; ++i)
@@ -621,6 +627,7 @@ void CGameFramework::FrameAdvance()
 	}
 	m_pUILayer->PlayerPosition = m_pPlayer->GetPosition();
 
+	m_pScene->OnPreRender(m_pd3dDevice, m_pd3dCommandQueue, m_pd3dFence, m_hFenceEvent);
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
@@ -648,10 +655,15 @@ void CGameFramework::FrameAdvance()
 
 
 
-	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
+	if (m_pScene)
+	{
+		m_pScene->OnPrepareRender(m_pd3dCommandList);
+		UpdateShaderVariables();
+		m_pScene->Render(m_pd3dCommandList, m_pCamera);
+	}
 
 	//Ãß°¡
-	UpdateShaderVariables();
+	//UpdateShaderVariables();
 
 #ifdef _WITH_PLAYER_TOP
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
