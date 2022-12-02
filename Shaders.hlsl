@@ -787,7 +787,7 @@ VS_PARTICLE_DRAW_OUTPUT VSParticleDraw(VS_PARTICLE_INPUT input)
 	VS_PARTICLE_DRAW_OUTPUT output = (VS_PARTICLE_DRAW_OUTPUT)0;
 
 	output.position = input.position;
-	output.size = 2.5f;
+	output.size = 3.5f;
 	output.type = input.type;
 
 	if (input.type == PARTICLE_TYPE_EMITTER) { output.color = float4(1.0f, 0.1f, 0.1f, 1.0f); output.size = 3.0f; }
