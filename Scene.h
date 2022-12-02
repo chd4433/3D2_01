@@ -74,6 +74,9 @@ public:
 
 	bool CheckCollideBB(BoundingOrientedBox src, BoundingOrientedBox dst);
 
+	void RenderParticle(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	void OnPostRenderParticle();
+
 	CShader** GetShader() { return m_ppShaders; };
 	CDynamicCubeMappingShader** GetDynamicShader() { return m_ppEnvironmentMappingShaders; };
 
@@ -113,4 +116,7 @@ public:
 
 	CDynamicCubeMappingShader** m_ppEnvironmentMappingShaders = NULL;
 	int							m_nEnvironmentMappingShaders = 0;
+
+	CParticleObject** m_ppParticleObjects = NULL;
+	int							m_nParticleObjects = 0;
 };

@@ -7,6 +7,18 @@
 #include "Player.h"
 #include "Scene.h"
 
+struct CB_FRAMEWORK_INFO
+{
+	float					m_fCurrentTime;
+	float					m_fElapsedTime;
+	float					m_fSecondsPerFirework = 1.0f;
+	int						m_nFlareParticlesToEmit = 30;
+	XMFLOAT3				m_xmf3Gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
+	int						m_nMaxFlareType2Particles = 15;
+	float					m_f2CursorPosX;
+	float					m_f2CursorPosY;
+};
+
 class UILayer;
 
 class CGameFramework
@@ -33,6 +45,10 @@ public:
     void ReleaseObjects();
 
 	//Ãß°¡
+	void CreateShaderVariables();
+	void ReleaseShaderVariables();
+
+
 	void UpdateShaderVariables();
 	void UpdateUI();
 
@@ -98,5 +114,9 @@ private:
 	_TCHAR						m_pszEnd[70];
 	clock_t						startTime;
 	DWORD dwPlayerDirection = 0;
+
+protected:
+	ID3D12Resource* m_pd3dcbFrameworkInfo = NULL;
+	CB_FRAMEWORK_INFO* m_pcbMappedFrameworkInfo = NULL;
 };
 
