@@ -175,7 +175,7 @@ void UILayer::Render(UINT nFrame)
     m_pd2dDeviceContext->BeginDraw();
 
     m_pd2dDeviceContext->DrawRectangle(d2dRect, pd2dBrushRect, 50.0f, NULL);
-   //m_pd2dDeviceContext->DrawRoundedRectangle(d2dRect1, pd2dBrushRect, 50.0f, NULL); //??
+   // m_pd2dDeviceContext->DrawRoundedRectangle(d2dRect1, pd2dBrushRect, 50.0f, NULL); //??
     for (UINT i = 0; i < m_nTextBlocks; i++)
     {
         m_pd2dDeviceContext->DrawText(m_pTextBlocks[i].m_pstrText, (UINT)wcslen(m_pTextBlocks[i].m_pstrText), m_pTextBlocks[i].m_pdwFormat, m_pTextBlocks[i].m_d2dLayoutRect, m_pTextBlocks[i].m_pd2dTextBrush);
@@ -187,8 +187,8 @@ void UILayer::Render(UINT nFrame)
     m_pd2dDeviceContext->DrawEllipse(d2dElipse4, pd2dBrush, 1.0f, NULL);
     m_pd2dDeviceContext->DrawEllipse(d2dElipsePlayer, pd2dBrush, 4.0f, NULL);
     m_pd2dDeviceContext->DrawLine(d2dpoint0, m_ppoint1, pd2dBrush, 1.0f, NULL);
-    m_pd2dDeviceContext->DrawRectangle(d2dRectHp1, pd2dBrushHpRect, 10.0f, NULL); //??
-    m_pd2dDeviceContext->DrawRectangle(d2dRectHp2, pd2dBrushHp2Rect, 10.0f, NULL);
+    //m_pd2dDeviceContext->DrawRectangle(d2dRectHp1, pd2dBrushHpRect, 10.0f, NULL); //??
+   // m_pd2dDeviceContext->DrawRectangle(d2dRectHp2, pd2dBrushHp2Rect, 10.0f, NULL);
     for (int i = 0; i < OBJNUM; ++i)
     {
         if (bShowObj[i])

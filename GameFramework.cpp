@@ -676,7 +676,8 @@ void CGameFramework::FrameAdvance()
 	}
 	m_pUILayer->PlayerPosition = m_pPlayer->GetPosition();
 
-	m_pScene->OnPreRender(m_pd3dDevice, m_pd3dCommandQueue, m_pd3dFence, m_hFenceEvent);
+	if(!m_bPaticle)
+		m_pScene->OnPreRender(m_pd3dDevice, m_pd3dCommandQueue, m_pd3dFence, m_hFenceEvent);
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
