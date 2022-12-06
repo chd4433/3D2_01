@@ -16,9 +16,9 @@ CPlayer::CPlayer()
 	m_pCamera = NULL;
 
 	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
-	m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	m_xmf3Right = m_xmf3PreRight = XMFLOAT3(1.0f, 0.0f, 0.0f);
+	m_xmf3Up = m_xmf3PreUp =  XMFLOAT3(0.0f, 1.0f, 0.0f);
+	m_xmf3Look = m_xmf3PreLook = XMFLOAT3(0.0f, 0.0f, 1.0f);
 
 	m_xmf3Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	m_xmf3Gravity = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -73,6 +73,22 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 	}
 }
 
+void CPlayer::PreVecMove(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
+{
+	if (dwDirection)
+	{
+		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
+		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3PreLook, fDistance);
+		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3PreLook, -fDistance);
+		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3PreRight, fDistance);
+		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3PreRight, -fDistance);
+		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3PreUp, fDistance);
+		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3PreUp, -fDistance);
+
+		Move(xmf3Shift, bUpdateVelocity);
+	}
+}
+
 void CPlayer::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 {
 	if (bUpdateVelocity)
@@ -115,6 +131,8 @@ void CPlayer::Rotate(float x, float y, float z)
 			XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Up), XMConvertToRadians(y));
 			m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, xmmtxRotate);
 			m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, xmmtxRotate);
+			m_xmf3PreLook = Vector3::TransformNormal(m_xmf3PreLook, xmmtxRotate);
+			m_xmf3PreRight = Vector3::TransformNormal(m_xmf3PreRight, xmmtxRotate);
 		}
 	}
 	else if (nCurrentCameraMode == SPACESHIP_CAMERA)
@@ -138,6 +156,52 @@ void CPlayer::Rotate(float x, float y, float z)
 			m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, xmmtxRotate);
 			m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, xmmtxRotate);
 		}
+	}
+
+	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
+	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+	m_xmf3Up = Vector3::CrossProduct(m_xmf3Look, m_xmf3Right, true);
+}
+
+void CPlayer::MovingRotate(float x, float y, float z)
+{
+	if (x != 0.0f)
+	{
+		m_fPitch += x;
+		if (m_fPitch > +89.0f) { x -= (m_fPitch - 89.0f); m_fPitch = +89.0f; }
+		if (m_fPitch < -89.0f) { x -= (m_fPitch + 89.0f); m_fPitch = -89.0f; }
+	}
+	if (y != 0.0f)
+	{
+		m_fYaw += y;
+		if (m_fYaw > 360.0f) m_fYaw -= 360.0f;
+		if (m_fYaw < 0.0f) m_fYaw += 360.0f;
+	}
+	if (z != 0.0f)
+	{
+		m_fRoll += z;
+		if (m_fRoll > +20.0f) { z -= (m_fRoll - 20.0f); m_fRoll = +20.0f; }
+		if (m_fRoll < -20.0f) { z -= (m_fRoll + 20.0f); m_fRoll = -20.0f; }
+	}
+	if(m_pCamera->GetMode() == FIRST_PERSON_CAMERA)
+		dynamic_cast<CFirstPersonCamera*>(m_pCamera)->MovingRotate(x, y, z);
+	if (y != 0.0f)
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Up), XMConvertToRadians(y));
+		m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, xmmtxRotate);
+		m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, xmmtxRotate);
+	}
+	if (x != 0.0f)
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Right), XMConvertToRadians(x));
+		m_xmf3Look = Vector3::TransformNormal(m_xmf3Look, xmmtxRotate);
+		m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, xmmtxRotate);
+	}
+	if (z != 0.0f)
+	{
+		XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Look), XMConvertToRadians(z));
+		m_xmf3Up = Vector3::TransformNormal(m_xmf3Up, xmmtxRotate);
+		m_xmf3Right = Vector3::TransformNormal(m_xmf3Right, xmmtxRotate);
 	}
 
 	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
@@ -174,6 +238,16 @@ void CPlayer::Update(float fTimeElapsed)
 	float fDeceleration = (m_fFriction * fTimeElapsed);
 	if (fDeceleration > fLength) fDeceleration = fLength;
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
+
+	m_xmf3PrePosition = m_xmf3Position;
+
+	if (m_RotCntX == 0 && m_RotCntZ == 0)
+	{
+		//m_xmf3PreLook = m_xmf3Look;
+		//m_xmf3PreRight = m_xmf3Right;
+		//m_xmf3PreUp = m_xmf3Up;
+		m_bBackRot = false;
+	}
 }
 
 CCamera *CPlayer::OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode)
@@ -243,6 +317,88 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 	}
 }
 
+void CPlayer::DynamicCubeRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
+	if (m_pShader) m_pShader->Render(pd3dCommandList, pCamera, 0);
+	CGameObject::Render(pd3dCommandList, pCamera);
+}
+
+bool CPlayer::ProcessInput(UCHAR* pKeysBuffer)
+{
+	bool b_return = false;
+	if (pKeysBuffer['W'] & 0xF0)
+	{
+		if (m_RotCntX < 16)
+		{
+			m_RotCntX += 2;
+			MovingRotate(2.0f, 0.f, 0.f);
+		}			
+		b_return = true;
+	}
+	if (pKeysBuffer['S'] & 0xF0)
+	{
+		if (m_RotCntX > -16)
+		{
+			m_RotCntX -= 2;
+			MovingRotate(-2.0f, 0.f, 0.f);
+		}
+		b_return = true;
+	}
+	if (pKeysBuffer['A'] & 0xF0)
+	{
+		if (m_RotCntZ < 16)
+		{
+			m_RotCntZ += 2;
+			MovingRotate(0.0f, 0.f, 2.f);
+		}
+		b_return = true;
+	}
+	if (pKeysBuffer['D'] & 0xF0)
+	{
+		if (m_RotCntZ > -16)
+		{
+			m_RotCntZ -= 2;
+			MovingRotate(0.0f, 0.f, -2.f);
+		}
+		b_return = true;
+	}
+
+	if (!b_return)
+	{
+		if (m_RotCntX != 0)
+		{
+			if (m_RotCntX > 0)
+			{
+				--m_RotCntX;
+				MovingRotate(-1.0f, 0.f, 0.f);
+			}
+			else
+			{
+				++m_RotCntX;
+				MovingRotate(1.0f, 0.f, 0.f);
+			}
+			m_bBackRot = true;
+		}
+
+		if (m_RotCntZ != 0)
+		{
+			if (m_RotCntZ > 0)
+			{
+				--m_RotCntZ;
+				MovingRotate(0.0f, 0.f, -1.f);
+			}
+			else
+			{
+				++m_RotCntZ;
+				MovingRotate(0.0f, 0.f, 1.f);
+			}
+			m_bBackRot = true;
+		}
+	}
+
+	return b_return;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // CAirplanePlayer
 
@@ -298,12 +454,12 @@ void CAirplanePlayer::Animate(float fTimeElapsed, XMFLOAT4X4 *pxmf4x4Parent)
 {
 	if (m_pMainRotorFrame)
 	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 2.0f) * fTimeElapsed);
+		XMMATRIX xmmtxRotate = XMMatrixRotationY(XMConvertToRadians(360.0f * 5.0f) * fTimeElapsed);
 		m_pMainRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pMainRotorFrame->m_xmf4x4Transform);
 	}
 	if (m_pTailRotorFrame)
 	{
-		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 4.0f) * fTimeElapsed);
+		XMMATRIX xmmtxRotate = XMMatrixRotationX(XMConvertToRadians(360.0f * 8.0f) * fTimeElapsed);
 		m_pTailRotorFrame->m_xmf4x4Transform = Matrix4x4::Multiply(xmmtxRotate, m_pTailRotorFrame->m_xmf4x4Transform);
 	}
 	

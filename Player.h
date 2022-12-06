@@ -18,6 +18,11 @@ protected:
 	XMFLOAT3					m_xmf3Up;
 	XMFLOAT3					m_xmf3Look;
 
+	XMFLOAT3					m_xmf3PrePosition;
+	XMFLOAT3					m_xmf3PreRight;
+	XMFLOAT3					m_xmf3PreUp;
+	XMFLOAT3					m_xmf3PreLook;
+
 	float           			m_fPitch;
 	float           			m_fYaw;
 	float           			m_fRoll;
@@ -37,6 +42,9 @@ protected:
 
 	bool						m_bTerrainCollide = false;
 	bool						m_bMissileCollide = false;
+	int							m_RotCntX = 0;
+	int							m_RotCntZ = 0;
+	bool						m_bBackRot;
 
 
 public:
@@ -44,11 +52,13 @@ public:
 	virtual ~CPlayer();
 
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
+	XMFLOAT3 GetPrePosition() { return(m_xmf3PrePosition); }
 	XMFLOAT3 GetLookVector() { return(m_xmf3Look); }
 	XMFLOAT3 GetUpVector() { return(m_xmf3Up); }
 	XMFLOAT3 GetRightVector() { return(m_xmf3Right); }
 	bool     GetTerrainCollide() { return(m_bTerrainCollide); }
 	bool     GetMissileCollide() { return(m_bMissileCollide); }
+	bool     GetBackRot() { return(m_bBackRot); }
 	
 
 	void SetFriction(float fFriction) { m_fFriction = fFriction; }
@@ -57,6 +67,7 @@ public:
 	void SetMaxVelocityY(float fMaxVelocity) { m_fMaxVelocityY = fMaxVelocity; }
 	void SetVelocity(const XMFLOAT3& xmf3Velocity) { m_xmf3Velocity = xmf3Velocity; }
 	void SetPosition(const XMFLOAT3& xmf3Position) { Move(XMFLOAT3(xmf3Position.x - m_xmf3Position.x, xmf3Position.y - m_xmf3Position.y, xmf3Position.z - m_xmf3Position.z), false); }
+	void SetPrePosition(const XMFLOAT3& xmf3Position) { Move(XMFLOAT3(xmf3Position.x - m_xmf3PrePosition.x, xmf3Position.y - m_xmf3PrePosition.y, xmf3Position.z - m_xmf3PrePosition.z), false); }
 	void SetTerrainCollide(const bool& collide) { m_bTerrainCollide = collide; }
 	void SetMissileCollide(const bool& collide) { m_bMissileCollide = collide; }
 
@@ -72,7 +83,10 @@ public:
 	void Move(ULONG nDirection, float fDistance, bool bVelocity = false);
 	void Move(const XMFLOAT3& xmf3Shift, bool bVelocity = false);
 	void Move(float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f);
+	void PreVecMove(DWORD dwDirection, float fDistance, bool bUpdateVelocity);
+
 	void Rotate(float x, float y, float z);
+	void MovingRotate(float x, float y, float z);
 
 	void Update(float fTimeElapsed);
 
@@ -91,6 +105,8 @@ public:
 	virtual CCamera *ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed) { return(NULL); }
 	virtual void OnPrepareRender();
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
+	virtual void DynamicCubeRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	bool ProcessInput(UCHAR* pKeysBuffer);
 };
 
 class CAirplanePlayer : public CPlayer

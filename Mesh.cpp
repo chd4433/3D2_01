@@ -72,6 +72,12 @@ void CMesh::Render(ID3D12GraphicsCommandList *pd3dCommandList, int nSubSet)
 	}
 }
 
+void CMesh::Render(ID3D12GraphicsCommandList *pd3dCommandList)
+{
+	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
+	pd3dCommandList->IASetVertexBuffers(m_nSlot, 1, &m_d3dPositionBufferView);
+	pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 CTexturedRectMesh::CTexturedRectMesh(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, float fWidth, float fHeight, float fDepth, float fxPosition, float fyPosition, float fzPosition) : CMesh(pd3dDevice, pd3dCommandList)
@@ -1234,8 +1240,8 @@ void CParticleMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList, int nPipe
 
 		pd3dCommandList->ResolveQueryData(m_pd3dSOQueryHeap, D3D12_QUERY_TYPE_SO_STATISTICS_STREAM0, 0, 1, m_pd3dSOQueryBuffer, 0);
 #else
-		//CMesh::Render(pd3dCommandList); //Stream Output to m_pd3dStreamOutputBuffer
-		CMesh::Render(pd3dCommandList, 0); //Stream Output to m_pd3dStreamOutputBuffer
+		CMesh::Render(pd3dCommandList); //Stream Output to m_pd3dStreamOutputBuffer
+		//CMesh::Render(pd3dCommandList, 0); //Stream Output to m_pd3dStreamOutputBuffer
 
 		::SynchronizeResourceTransition(pd3dCommandList, m_pd3dDefaultBufferFilledSize, D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		pd3dCommandList->CopyResource(m_pd3dReadBackBufferFilledSize, m_pd3dDefaultBufferFilledSize);
@@ -1246,8 +1252,8 @@ void CParticleMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList, int nPipe
 	{
 		pd3dCommandList->SOSetTargets(0, 1, NULL);
 
-		//CMesh::Render(pd3dCommandList); //Render m_pd3dDrawBuffer 
-		CMesh::Render(pd3dCommandList,0); //Render m_pd3dDrawBuffer 
+		CMesh::Render(pd3dCommandList); //Render m_pd3dDrawBuffer 
+		//CMesh::Render(pd3dCommandList,0); //Render m_pd3dDrawBuffer 
 	}
 }
 

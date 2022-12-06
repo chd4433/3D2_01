@@ -15,8 +15,8 @@ struct CB_FRAMEWORK_INFO
 	int						m_nFlareParticlesToEmit = 30;
 	XMFLOAT3				m_xmf3Gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
 	int						m_nMaxFlareType2Particles = 15;
-	float					m_f2CursorPosX;
-	float					m_f2CursorPosY;
+	/*float					m_f2CursorPosX;
+	float					m_f2CursorPosY;*/
 };
 
 class UILayer;
@@ -114,6 +114,7 @@ private:
 	_TCHAR						m_pszEnd[70];
 	clock_t						startTime;
 	DWORD dwPlayerDirection = 0;
+	bool m_bPaticle = false;
 
 protected:
 	ID3D12Resource* m_pd3dcbFrameworkInfo = NULL;

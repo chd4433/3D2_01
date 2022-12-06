@@ -40,8 +40,8 @@ cbuffer cbFrameworkInfo : register(b3)
 	int			gnFlareParticlesToEmit : packoffset(c0.w);
 	float3		gf3Gravity : packoffset(c1.x);
 	int			gnMaxFlareType2Particles : packoffset(c1.w);
-	float		gf2CursorPosX : packoffset(c2.x);
-	float		gf2CursorPosY : packoffset(c2.y);
+	//float		gf2CursorPosX : packoffset(c2.x);
+	//float		gf2CursorPosY : packoffset(c2.y);
 };
 
 cbuffer cbWaterInfo : register(b5)
@@ -153,6 +153,57 @@ float4 PSStandard(VS_STANDARD_OUTPUT input) : SV_TARGET
 	cColor.w = 0.7f;
 	return(cColor);
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define _WITH_SCALING
+//#define _WITH_NORMAL_DISPLACEMENT
+//#define _WITH_PROJECTION_SPACE
+
+#define FRAME_BUFFER_WIDTH		640
+#define FRAME_BUFFER_HEIGHT		480
+
+VS_STANDARD_OUTPUT VSOutline(VS_STANDARD_INPUT input)
+{
+	VS_STANDARD_OUTPUT output;
+
+#ifdef _WITH_SCALING
+	//Scaling
+	output.positionW = (float3)mul(float4(input.position, 1.0f), gmtxGameObject);
+	float fScale = 1.00175f + length(gvCameraPosition - output.positionW) * 0.0009f;
+	output.positionW = (float3)mul(float4(input.position * fScale, 1.0f), gmtxGameObject);
+	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+#endif
+
+#ifdef _WITH_NORMAL_DISPLACEMENT
+	//Normal Displacement
+	output.positionW = (float3)mul(float4(input.position, 1.0f), gmtxGameObject);
+	float3 normalW = normalize(mul(input.normal, (float3x3)gmtxGameObject));
+	float fScale = length(gvCameraPosition - output.positionW) * 0.01f;
+	output.positionW += normalW * fScale;
+
+	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+#endif
+
+#ifdef _WITH_PROJECTION_SPACE
+	//Projection Space
+	output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+	float3 normal = mul(mul(input.normal, (float3x3)gmtxGameObject), (float3x3)mul(gmtxView, gmtxProjection));
+	float2 f2Offset = normalize(normal.xy) / float2(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT) * output.position.w * 3.5f;
+	output.position.xy += f2Offset;
+	output.position.z += 0.0f;
+#endif
+
+	return(output);
+}
+
+float4 PSOutline(VS_STANDARD_OUTPUT input) : SV_TARGET
+{
+	return(float4(1.0f, 0.2f, 0.2f, 0.0f));
+}
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -565,11 +616,11 @@ float4 PSCubeMapping(VS_LIGHTING_OUTPUT input) : SV_Target
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-#define PARTICLE_TYPE_EMITTER		0
-#define PARTICLE_TYPE_SHELL			1
-#define PARTICLE_TYPE_FLARE01		2
-#define PARTICLE_TYPE_FLARE02		3
-#define PARTICLE_TYPE_FLARE03		4
+#define PARTICLE_TYPE_EMITTER		0 // »¡
+#define PARTICLE_TYPE_SHELL			1 // ÆÄ
+#define PARTICLE_TYPE_FLARE01		2 //³ë
+#define PARTICLE_TYPE_FLARE02		3 //ÇÎ
+#define PARTICLE_TYPE_FLARE03		4 // ?
 
 #define SHELL_PARTICLE_LIFETIME		3.0f
 #define FLARE01_PARTICLE_LIFETIME	2.5f
@@ -794,7 +845,7 @@ VS_PARTICLE_DRAW_OUTPUT VSParticleDraw(VS_PARTICLE_INPUT input)
 	else if (input.type == PARTICLE_TYPE_SHELL) { output.color = float4(0.1f, 0.0f, 1.0f, 1.0f); output.size = 3.0f; }
 	else if (input.type == PARTICLE_TYPE_FLARE01) { output.color = float4(1.0f, 1.0f, 0.1f, 1.0f); output.color *= (input.lifetime / FLARE01_PARTICLE_LIFETIME); }
 	else if (input.type == PARTICLE_TYPE_FLARE02) output.color = float4(1.0f, 0.1f, 1.0f, 1.0f);
-	else if (input.type == PARTICLE_TYPE_FLARE03) { output.color = float4(1.0f, 0.1f, 1.0f, 1.0f); output.color *= (input.lifetime / FLARE03_PARTICLE_LIFETIME); }
+	else if (input.type == PARTICLE_TYPE_FLARE03) { output.color = float4(0.1f, 1.0f, 1.0f, 1.0f); output.color *= (input.lifetime / FLARE03_PARTICLE_LIFETIME); }
 
 	return(output);
 }
@@ -827,3 +878,4 @@ float4 PSParticleDraw(GS_PARTICLE_DRAW_OUTPUT input) : SV_TARGET
 
 	return(cColor);
 }
+

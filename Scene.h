@@ -83,6 +83,7 @@ public:
 	CPlayer								*m_pPlayer = NULL;
 	float								m_fMultiShaderTimeElapsed = 0.0f;
 	int									m_ShotObjCnt = 0;
+	bool								m_Outline = false;
 
 public:
 	ID3D12RootSignature					*m_pd3dGraphicsRootSignature = NULL;
@@ -119,4 +120,6 @@ public:
 
 	CParticleObject** m_ppParticleObjects = NULL;
 	int							m_nParticleObjects = 0;
+
+	COutlineShader* m_pOutlineShader = NULL;
 };

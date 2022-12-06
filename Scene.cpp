@@ -103,7 +103,11 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_nParticleObjects = 1;
 	m_ppParticleObjects = new CParticleObject * [m_nParticleObjects];
 
-	m_ppParticleObjects[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(920.0f, 600.0f, 1270.0f), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
+	m_ppParticleObjects[0] = new CParticleObject(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, XMFLOAT3(m_pTerrain->GetWidth() /2 , 600.0f, m_pTerrain->GetLength() / 2), XMFLOAT3(0.0f, 65.0f, 0.0f), 0.0f, XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(8.0f, 8.0f), MAX_PARTICLES);
+
+	m_pOutlineShader = new COutlineShader();
+	m_pOutlineShader->CreateShader(pd3dDevice, pd3dCommandList,m_pd3dGraphicsRootSignature);
+	m_pOutlineShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
 	m_nShaders = 4;
 	m_ppShaders = new CShader*[m_nShaders];
@@ -173,6 +177,11 @@ void CScene::ReleaseObjects()
 	if (m_pTerrainWater) delete m_pTerrainWater;
 	//if (m_pFog) delete m_pFog;
 
+	if (m_pOutlineShader)
+	{
+		m_pOutlineShader->ReleaseShaderVariables();
+		delete m_pOutlineShader;
+	}
 
 	if (m_ppGameObjects)
 	{
@@ -560,6 +569,10 @@ bool CScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wPar
 		case 'f':
 			dynamic_cast<CMisilleShader*>(m_ppShaders[3])->FireMissile(m_pPlayer, SHOT_PLAYER);
 			break;
+		case 'N':
+		case 'n':
+			m_Outline = !m_Outline;
+			break;
 		default:
 			break;
 		}
@@ -688,10 +701,29 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 
 
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
+
 	for (int i = 0; i < m_nShaders; i++) 
 		if (m_ppShaders[i]) 
 			m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+	if (m_Outline)
+	{
+		if (m_ppShaders[0])
+		{
+			for (int i = 0; i < dynamic_cast<CObjectsShader*>((m_ppShaders[0]))->GetObjectNum(); i++)
+				if (dynamic_cast<CObjectsShader*>((m_ppShaders[0]))->GetppObject()[i])
+				{
+					m_pOutlineShader->UpdateShaderVariable(pd3dCommandList, dynamic_cast<CObjectsShader*>((m_ppShaders[0]))->GetppObject()[i]);
+					m_pOutlineShader->Render(pd3dCommandList, pCamera, 0);
+					dynamic_cast<CObjectsShader*>((m_ppShaders[0]))->GetppObject()[i]->MeshRender(pd3dCommandList, pCamera);
+					m_pOutlineShader->Render(pd3dCommandList, pCamera, 1);
+					dynamic_cast<CObjectsShader*>((m_ppShaders[0]))->GetppObject()[i]->MeshRender(pd3dCommandList, pCamera);
+				}
+		}
+	}
+	
 	if (m_pTerrainWater) m_pTerrainWater->Render(pd3dCommandList, pCamera);
+
+
 }
 
 void CScene::OnPrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)

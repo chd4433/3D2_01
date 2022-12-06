@@ -327,6 +327,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 					ChangeSwapChainState();
 					break;
 				case VK_F5:
+					m_bPaticle = !m_bPaticle;
 					break;
 				default:
 					break;
@@ -502,8 +503,8 @@ void CGameFramework::UpdateShaderVariables()
 	m_pcbMappedFrameworkInfo->m_nFlareParticlesToEmit = 100;
 	m_pcbMappedFrameworkInfo->m_xmf3Gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
 	m_pcbMappedFrameworkInfo->m_nMaxFlareType2Particles = 15 * 1.5f;
-	m_pcbMappedFrameworkInfo->m_f2CursorPosX = fxCursorPos;
-	m_pcbMappedFrameworkInfo->m_f2CursorPosY = fyCursorPos;
+	//m_pcbMappedFrameworkInfo->m_f2CursorPosX = fxCursorPos;
+	//m_pcbMappedFrameworkInfo->m_f2CursorPosY = fyCursorPos;
 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbFrameworkInfo->GetGPUVirtualAddress();
 	m_pd3dCommandList->SetGraphicsRootConstantBufferView(14, d3dGpuVirtualAddress);
@@ -537,7 +538,9 @@ void CGameFramework::ProcessInput()
 {
 	static UCHAR pKeysBuffer[256];
 	bool bProcessedByScene = false;
+	bool bProcessedByPlayer = false;
 	if (GetKeyboardState(pKeysBuffer) && m_pScene) bProcessedByScene = m_pScene->ProcessInput(pKeysBuffer);
+	if (GetKeyboardState(pKeysBuffer) && m_pPlayer) bProcessedByPlayer =  m_pPlayer->ProcessInput(pKeysBuffer);
 	if (!bProcessedByScene)
 	{
 		DWORD dwDirection = 0;
@@ -561,7 +564,7 @@ void CGameFramework::ProcessInput()
 
 		if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
 		{
-			if (cxDelta || cyDelta)
+			if ((cxDelta || cyDelta) && !bProcessedByPlayer && !m_pPlayer->GetBackRot())
 			{
 				if (pKeysBuffer[VK_RBUTTON] & 0xF0)
 					m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
@@ -571,10 +574,13 @@ void CGameFramework::ProcessInput()
 
 			if (dwDirection)
 			{
-				m_pPlayer->Move(dwDirection, 1.25f, false);
+				m_pPlayer->PreVecMove(dwDirection, 50.f * m_GameTimer.GetTimeElapsed(), false);
 				dwPlayerDirection = dwDirection;
-			}
-				
+				m_pPlayer->OnPrepareRender();
+				m_pPlayer->UpdateBoundingBox();
+				if (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
+					m_pPlayer->SetPosition(m_pPlayer->GetPrePosition());
+			}		
 		}
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
@@ -618,17 +624,18 @@ void CGameFramework::MoveToNextFrame()
 
 void CGameFramework::UpdateUI()
 {
-	while (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
-	{
-		m_pPlayer->Move(dwPlayerDirection, -0.5f, false);
-		m_pPlayer->OnPrepareRender();
-		m_pPlayer->UpdateBoundingBox();
-	}
+	//while (dynamic_cast<CAirplanePlayer*>(m_pPlayer)->OnPlayerUpdateCallback())
+	//{
+	//	m_pPlayer->PreVecMove(dwPlayerDirection, -0.5f, false);
+	//	m_pPlayer->OnPrepareRender();
+	//	m_pPlayer->UpdateBoundingBox();
+	//}
 
 	if (m_pScene->m_ShotObjCnt == OBJNUM)
 	{
 		wcscpy_s(m_pszEnd, 70, L"GAME CLEAR");
 		m_pUILayer->UpdateTextOutputs(3, m_pszEnd, NULL, NULL, NULL);
+		m_bPaticle = true;
 	}
 	else if (m_pUILayer->GetPlayerHP() == 0)
 	{
@@ -647,6 +654,9 @@ void CGameFramework::UpdateUI()
 }
 
 //#define _WITH_PLAYER_TOP
+
+//#define _WITH_SYNCH_SWAPCHAIN
+//#define _WITH_PRESENT_PARAMETERS
 
 void CGameFramework::FrameAdvance()
 {    
@@ -701,9 +711,6 @@ void CGameFramework::FrameAdvance()
 		m_pScene->Render(m_pd3dCommandList, m_pCamera);
 	}
 
-	//Ãß°¡
-	//UpdateShaderVariables();
-
 #ifdef _WITH_PLAYER_TOP
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 #endif
@@ -711,13 +718,13 @@ void CGameFramework::FrameAdvance()
 	{
 		m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 	}
-
-	m_pScene->RenderParticle(m_pd3dCommandList, m_pCamera);
+	if(m_bPaticle)
+		m_pScene->RenderParticle(m_pd3dCommandList, m_pCamera);
 
 	::SynchronizeResourceTransition(m_pd3dCommandList, m_ppd3dSwapChainBackBuffers[m_nSwapChainBufferIndex], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	::ExecuteCommandList(m_pd3dCommandList, m_pd3dCommandQueue, m_pd3dFence, ++m_nFenceValues[m_nSwapChainBufferIndex], m_hFenceEvent);
-
-	m_pScene->OnPostRenderParticle();
+	if (m_bPaticle)
+		m_pScene->OnPostRenderParticle();
 	//d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	//d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	//d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
